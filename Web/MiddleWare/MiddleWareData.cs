@@ -1,4 +1,4 @@
-﻿using HSServer.Resource.Language;
+﻿using HS.Utils;
 using HSServer.Web.Module;
 using System.Threading.Tasks;
 

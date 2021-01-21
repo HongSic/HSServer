@@ -1,5 +1,4 @@
 ﻿using HS.Utils;
-using HSServer.Resource.Language;
 using System;
 using System.Collections.Generic;
 using System.IO;

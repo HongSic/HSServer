@@ -1,4 +1,4 @@
-﻿using HSServer.Resource.Language;
+﻿using HS.Utils;
 
 namespace HSServer.Web.Module
 {

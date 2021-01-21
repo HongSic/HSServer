@@ -1,4 +1,4 @@
-﻿using HSServer.Resource.Language;
+﻿using HS.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -82,19 +82,19 @@ namespace HSServer.Web.MiddleWare
                                                 Add((MiddleWareProc)Activator.CreateInstance(type), mw.Priority);
                                                 MiddleWareAdding(string.Format("[Loaded] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", mw.Name, type.Name, mw.Priority), null);
                                             }
-                                            catch (Exception ex) { MiddleWareAdding(string.Format(LanguageManager.Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
+                                            catch (Exception ex) { MiddleWareAdding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
                                             break;
                                         }
                                         else MiddleWareAdding(string.Format("[UnLoad] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", mw.Name, type.Name, mw.Priority), null);
                                     }
                                 }
                             }
-                            catch (Exception ex) { MiddleWareAdding(LanguageManager.Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
+                            catch (Exception ex) { MiddleWareAdding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                         }
                     }
-                    catch (Exception ex) { MiddleWareAdding(LanguageManager.Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
+                    catch (Exception ex) { MiddleWareAdding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                 }
-                MiddleWareAdding(string.Format(LanguageManager.Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
+                MiddleWareAdding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
             }
         }
 

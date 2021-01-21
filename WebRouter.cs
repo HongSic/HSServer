@@ -1,4 +1,4 @@
-﻿using HSServer.Resource.Language;
+﻿using HS.Utils;
 using HSServer.Settings;
 using HSServer.Web;
 using HSServer.Web.MiddleWare;
