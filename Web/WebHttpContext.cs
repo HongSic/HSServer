@@ -6,7 +6,11 @@
         public WebHttpContext(IWebHttpRequest Request, IWebHttpResponse Response, WebHttpSession Session, IWebHttpInfo Info) 
         { this.Request = Request; this.Response = Response; this.Session = Session; this.Info = Info; }
         public WebHttpContext(WebHttpContextRaw Raw) 
-        { this.Request = Raw.Request; this.Response = Raw.Response; this.Session = new WebHttpSession(Raw.Session); this.Info = Raw.Info; }
+        {
+            this.Request = Raw.Request; 
+            this.Response = Raw.Response; 
+            this.Info = Raw.Info; 
+            try { if(Raw.Session != null) this.Session = new WebHttpSession(Raw.Session); } catch { } }
 
         public IWebHttpRequest Request { get; }
         public IWebHttpResponse Response { get; }

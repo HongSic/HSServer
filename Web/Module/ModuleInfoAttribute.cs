@@ -1,13 +1,12 @@
-﻿#if FALSE
-using System;
+﻿using System;
 
 namespace HSServer.Web.Module
 {
-    [AttributeUsage(AttributeTargets.All, AllowMultiple =true)]
+    [AttributeUsage(AttributeTargets.All)]
     public class ModuleInfoAttribute : Attribute
     {
-        public ModuleInfoAttribute(string Path) { this.Path = Path; }
-        public string Path { get; private set; }
+        public ModuleInfoAttribute(string Name) { this.Name = Name; }
+        public string Name { get; private set; }
 
         /*
         public WebParamInfoList ParamsInfo { get; private set; }
@@ -22,4 +21,3 @@ namespace HSServer.Web.Module
         */
     }
 }
-#endif

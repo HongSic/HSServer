@@ -1,23 +1,32 @@
 ﻿using HS.Utils;
 using HSServer.Settings.WebRouter;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 
 namespace HSServer.Settings
 {
     public class WebRouterSetting
     {
+        private const string FILENAME = "WebRouter.json";
+
         public WebRouterSetting(WebRouterLoadOption LoadOption, WebRouterLoad Load) { this.LoadOption = LoadOption; this.Load = Load; }
         public WebRouterLoadOption LoadOption { get; private set; }
         public WebRouterLoad Load { get; private set; }
 
+        public static WebRouterSetting FromJSONFile(string JSONPath = null)
+        {            
+            //JSONPath 가 비어있거나 null 이면
+            if (string.IsNullOrWhiteSpace(JSONPath))
+                JSONPath = StringUtils.GetExcutePath() + "\\Setting\\" + FILENAME;
+
+            return File.Exists(JSONPath) ? FromJSON(File.ReadAllText(JSONPath)) : null;
+        }
+
         public static WebRouterSetting FromResource()
         {
-            using (var res = IOUtils.GetResourceStream("Settings.WebRouter.json"))
+            using (var res = IOUtils.GetResourceStream("HSServer.Settings." + FILENAME))
             using (var str = new StreamReader(res))
                 return FromJSON(str.ReadToEnd());
         }

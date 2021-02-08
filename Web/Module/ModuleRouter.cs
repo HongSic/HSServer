@@ -19,7 +19,7 @@ namespace HSServer.Web.Module
     {
         internal ModuleRouter() { }
 
-        private static Dictionary<string, ModuleProc> Modules = new Dictionary<string, ModuleProc>();
+        private static readonly Dictionary<string, ModuleProc> Modules = new Dictionary<string, ModuleProc>();
 
         public static event ModuleRouterInitEventHandler ModuleIniting;
         public static event ModuleRouterAddingEventHandler ModuleAdding;
@@ -47,23 +47,31 @@ namespace HSServer.Web.Module
         }
         //private static void InitErrorLog(Exception ex, string ModuleName) { Logger.LogSYSTEM(LogLevel.ERROR, LanguageManager.Language["STR_LOG_WEB_MODULE_ERROR"], ex, ModuleName); }
 
-        public static bool Add(string WebPath, ModuleProc Module)
+        public static bool Add(string WebPath, ModuleProc Module, string Name = null)
         {
-            string Name = Module.GetType().Name;
+            string name = Name == null ? Module.GetType().Name : Name;
             if (!Modules.ContainsKey(WebPath))
             {
                 Modules.Add(WebPath, Module);
-                ModuleAdding?.Invoke(string.Format("[Loaded] WebModule: [{0}] {1}", WebPath, Name), null);
+                ModuleAdding?.Invoke(string.Format("[Loaded] WebModule: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
                 return true;
             }
             else 
             {
-                ModuleAdding?.Invoke(string.Format("[Exist!] WebModule: [{0}] {1}", WebPath, Name), null);
+                ModuleAdding?.Invoke(string.Format("[Exist!] WebModule: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
                 return false;
             }
 
             //if (Modules.ContainsKey(Path)) Modules[Path] = Module;
             //else Modules.Add(Path, Module);
+        }
+        public static bool Add(ModuleProc Module)
+        {
+            Attribute[] attrs = Attribute.GetCustomAttributes(Module.GetType());
+            foreach (Attribute attr in attrs)
+                if (attr is ModulePathAttribute module) 
+                    return Add(module.Path, Module, module.Name);
+            return false;
         }
         public static void AddByAssembly(params string[] ModulePath)
         {
@@ -93,20 +101,22 @@ namespace HSServer.Web.Module
 
                         foreach (Type type in asm.GetTypes())
                         {
-                            try
+                            if(type is ModuleProc)
                             {
-                                Attribute[] attrs = Attribute.GetCustomAttributes(type);
-                                foreach (Attribute attr in attrs)
+                                try
                                 {
-                                    ModulePathAttribute module = attr as ModulePathAttribute;
-                                    if (module != null)
+                                    Attribute[] attrs = Attribute.GetCustomAttributes(type);
+                                    foreach (Attribute attr in attrs)
                                     {
-                                        try { Add(module.Path, (ModuleProc)Activator.CreateInstance(type)); }
-                                        catch (Exception ex) { ModuleAdding(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], type.Name), ex); }
+                                        if (attr is ModulePathAttribute module)
+                                        {
+                                            try { Add(module.Path, (ModuleProc)Activator.CreateInstance(type), module.Name); }
+                                            catch (Exception ex) { ModuleAdding(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
+                                        }
                                     }
                                 }
+                                catch (Exception ex) { ModuleAdding(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
                             }
-                            catch (Exception ex) { ModuleAdding(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
                         }
                     }
                 }
@@ -134,7 +144,7 @@ namespace HSServer.Web.Module
                     else
                     {
                         string path = data.Path;
-                        int idx = 0;
+                        int idx;
                         while ((idx = path.LastIndexOf('/')) > -1)
                         {
                             path = path.Remove(idx);
@@ -160,11 +170,7 @@ namespace HSServer.Web.Module
             Attribute[] attrs = Attribute.GetCustomAttributes(Module.GetType());
             foreach (Attribute attr in attrs)
             {
-                if (attr is ModulePathAttribute)
-                {
-                    ModulePathAttribute module = (ModulePathAttribute)attr;
-                    Add(module.Path, Module);
-                }
+                if (attr is ModulePathAttribute module) Add(module.Path, Module);
             }
         }
 

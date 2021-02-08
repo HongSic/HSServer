@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace HSServer.Web.Socket
+{
+    public delegate byte[] WebSocketReceviedEventHandler(byte[] Data);
+    public interface IWebSocketContext
+    {
+        public WebSocketReceviedEventHandler WebSocketRecevied;
+
+        byte[] OnWebSocketRecevied(byte[] Data);
+    }
+}

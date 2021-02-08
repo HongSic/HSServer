@@ -3,30 +3,42 @@ using HSServer.Settings;
 using HSServer.Web;
 using HSServer.Web.MiddleWare;
 using HSServer.Web.Module;
+using HSServer.Web.Socket;
+using HSServer.Extension;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace HSServer
 {
     public static class WebRouter
     {
-        public static bool Init(WebRouterSetting Setting, LanguageManager Manager) { return Init(Setting, ref Manager); }
-        public static bool Init(WebRouterSetting Setting, ref LanguageManager Manager)
+        public static bool Init(WebRouterSetting Setting, LanguageManager Manager, bool AddByAssembly = true) { return Init(Setting, ref Manager, AddByAssembly); }
+        public static bool Init(WebRouterSetting Setting, ref LanguageManager Manager, bool AddByAssembly = true)
         {
             //string json_file = SettingsHSSever.Settings.GetPath("WebRouter.json");
 
             //Logger.LogSYSTEM(LogLevel.INFO, LanguageManager.Language["STR_LOG_WEB_ROUTER_INITING"]);
             MiddleWareRouter.Init(ref Manager);
-            MiddleWareRouter.AddByAssembly(Setting.Load.MiddleWare);
+            if(AddByAssembly) MiddleWareRouter.AddByAssembly(Setting.Load.MiddleWare);
 
             ModuleRouter.Init(ref Manager);
-            ModuleRouter.AddByAssembly(Setting.Load.Module);
+            if (AddByAssembly) ModuleRouter.AddByAssembly(Setting.Load.Module);
             //Logger.LogSYSTEM(LogLevel.INFO, LanguageManager.Language["STR_LOG_WEB_ROUTER_INITED"]);
+
+            WebSocketRouter.Init(ref Manager);
+            if (AddByAssembly) WebSocketRouter.AddByAssembly(Setting.Load.Module);
 
             return true;
         }
 
         public static async Task<ModuleResultCode> RouteAsync(string Path, LanguageManager STR_LANG, WebHttpContextRaw ContextRaw)
         {
+            string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            //Set HTTP Header to this
+            ContextRaw.Response.SetHeader("X-Powered-By", $"HS Server Framework (Web)/{Version}");
+            if(!ContextRaw.Response.Headers.Exist("Server")) ContextRaw.Response.SetHeader("Server", $"HS Server (Web)/{Version}");
+
             MiddleWareData data = await MiddleWareRouter.RouteAsync(new MiddleWareData(Path, STR_LANG, ContextRaw));
             ModuleResultCode ResultCode = ModuleResultCode.OK;
             if (!data.IsClose && ContextRaw.Response.IsWritable) ResultCode = await ModuleRouter.RouteAsync(data);

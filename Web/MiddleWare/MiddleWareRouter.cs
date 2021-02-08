@@ -40,12 +40,20 @@ namespace HSServer.Web.MiddleWare
             }
         }
 
-        public static void Add(MiddleWareProc MiddleWare, MiddleWarePriority Priority = MiddleWarePriority.Normal) 
+        public static void Add(MiddleWareProc MiddleWare, string Name, MiddleWarePriority Priority = MiddleWarePriority.Normal) 
         {
             if (!MiddleWares.ContainsKey(Priority)) MiddleWares.Add(Priority, new List<MiddleWareProc>());
             MiddleWares[Priority].Add(MiddleWare);
 
-            MiddleWareAdding?.Invoke(string.Format("[Loaded] MiddleWare: {0}", MiddleWare.GetType().Name), null);
+            string name = Name == null ? MiddleWare.GetType().Name : Name;
+            MiddleWareAdding(string.Format("[Loaded] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", name, MiddleWare.GetType().Name, Priority), null);
+        }
+        public static void Add(MiddleWareProc MiddleWare)
+        {
+            Attribute[] attrs = Attribute.GetCustomAttributes(MiddleWare.GetType());
+            foreach (Attribute attr in attrs)
+                if (attr is MiddleWareInfoAttribute middle)
+                    Add(MiddleWare, middle.Name, middle.Priority);
         }
         public static void AddByAssembly(params string[] ModulePath)
         {
@@ -77,11 +85,7 @@ namespace HSServer.Web.MiddleWare
                                         //Console.WriteLine("ATTR_AUTO: " + mw.AutoRegister); 
                                         if (mw.AutoRegister)
                                         {
-                                            try
-                                            {
-                                                Add((MiddleWareProc)Activator.CreateInstance(type), mw.Priority);
-                                                MiddleWareAdding(string.Format("[Loaded] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", mw.Name, type.Name, mw.Priority), null);
-                                            }
+                                            try { Add((MiddleWareProc)Activator.CreateInstance(type), mw.Name, mw.Priority); }
                                             catch (Exception ex) { MiddleWareAdding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
                                             break;
                                         }
