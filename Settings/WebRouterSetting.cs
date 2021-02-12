@@ -9,7 +9,10 @@ namespace HSServer.Settings
 {
     public class WebRouterSetting
     {
-        private const string FILENAME = "WebRouter.json";
+        public const string FILENAME = "WebRouter.json";
+        public const string DIR = "Settings";
+
+        public static readonly string DefaultPath = StringUtils.GetExcutePath() + $"/{DIR}/{FILENAME}";
 
         public WebRouterSetting(WebRouterLoadOption LoadOption, WebRouterLoad Load) { this.LoadOption = LoadOption; this.Load = Load; }
         public WebRouterLoadOption LoadOption { get; private set; }
@@ -19,14 +22,14 @@ namespace HSServer.Settings
         {            
             //JSONPath 가 비어있거나 null 이면
             if (string.IsNullOrWhiteSpace(JSONPath))
-                JSONPath = StringUtils.GetExcutePath() + "\\Setting\\" + FILENAME;
+                JSONPath = StringUtils.GetExcutePath() + $"/{DIR}/{FILENAME}";
 
             return File.Exists(JSONPath) ? FromJSON(File.ReadAllText(JSONPath)) : null;
         }
 
         public static WebRouterSetting FromResource()
         {
-            using (var res = IOUtils.GetResourceStream("HSServer.Settings." + FILENAME))
+            using (var res = IOUtils.GetResourceStream($"HSServer.{DIR}", FILENAME))
             using (var str = new StreamReader(res))
                 return FromJSON(str.ReadToEnd());
         }
