@@ -1,0 +1,51 @@
+﻿using System;
+
+namespace HSServer.Web.Module
+{
+    public class ModuleResult
+    {
+        public bool IsResultSet { get; private set; } = false;
+        public ModuleResult(ModuleResponseCode ResponseCode = ModuleResponseCode.OK)
+        {
+            this.ResponseCode = ResponseCode;
+        }
+        public ModuleResult(ModuleResponseCode ResponseCode, ModuleResultCode Result, int Code, string Message, object Data) : this(ResponseCode)
+        {
+            IsResultSet = true;
+            this.Result = Result;
+            this.Code = Code;
+            this.Message = Message;
+            this.Data = Data;
+        }
+
+        public ModuleResponseCode ResponseCode { get; private set; }
+        public ModuleResultCode Result { get; private set; }
+        public int Code { get; private set; }
+        public string Message { get; private set; }
+        public object Data { get; private set; }
+
+        public static explicit operator ModuleResult(ModuleResponseCode HTTPCode) { return new ModuleResult(HTTPCode); }
+        public static explicit operator ModuleResultCode(ModuleResult Result) { return (ModuleResultCode)Result.ResponseCode; }
+    }
+
+    /*
+    public class ModuleResult
+    {
+        public int ResultCode { get; private set; }
+        public Exception Exception { get; private set; }
+        public string ExtraData { get; private set; }
+
+        public ModuleResult(ModuleResultCode ResultCode, Exception Exception = null, string ExtraData = null) : this((int)ResultCode, Exception, ExtraData) { }
+        public ModuleResult(int ResultCode, Exception Exception = null, string ExtraData = null)
+        {
+            this.ResultCode = ResultCode;
+            this.Exception = Exception;
+            this.ExtraData = ExtraData;
+        }
+
+        public static explicit operator ModuleResult(ModuleResultCode Kind) { return new ModuleResult(Kind); }
+        public static explicit operator ModuleResultCode(ModuleResult Result) { return (ModuleResultCode)Result.ResultCode; }
+        public static explicit operator int(ModuleResult Result) { return Result.ResultCode; }
+    }
+    */
+}

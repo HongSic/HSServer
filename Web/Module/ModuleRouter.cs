@@ -49,7 +49,7 @@ namespace HSServer.Web.Module
 
         public static bool Add(string WebPath, ModuleProc Module, string Name = null)
         {
-            string name = Name == null ? Module.GetType().Name : Name;
+            string name = Name ?? Module.GetType().Name;
             if (!Modules.ContainsKey(WebPath))
             {
                 Modules.Add(WebPath, Module);
@@ -88,7 +88,7 @@ namespace HSServer.Web.Module
                             path = StringUtils.PathMaker(dir, path);
                             if (!File.Exists(path)) continue;
                         }
-                        ModuleAdding(string.Format(Language["STR_LOG_WEB_MODULE_LOADING"], ModulePath[i]), null);
+                        ModuleAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_LOADING"], ModulePath[i]), null);
 
                         Assembly asm = Assembly.LoadFrom(path);
 
@@ -101,26 +101,29 @@ namespace HSServer.Web.Module
 
                         foreach (Type type in asm.GetTypes())
                         {
-                            if(type is ModuleProc)
+                            /*
+                            if (type is ModuleProc)
                             {
-                                try
+                                
+                            }
+                            */
+                            try
+                            {
+                                Attribute[] attrs = Attribute.GetCustomAttributes(type);
+                                foreach (Attribute attr in attrs)
                                 {
-                                    Attribute[] attrs = Attribute.GetCustomAttributes(type);
-                                    foreach (Attribute attr in attrs)
+                                    if (attr is ModulePathAttribute module)
                                     {
-                                        if (attr is ModulePathAttribute module)
-                                        {
-                                            try { Add(module.Path, (ModuleProc)Activator.CreateInstance(type), module.Name); }
-                                            catch (Exception ex) { ModuleAdding(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
-                                        }
+                                        try { Add(module.Path, (ModuleProc)Activator.CreateInstance(type), module.Name); }
+                                        catch (Exception ex) { ModuleAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
                                     }
                                 }
-                                catch (Exception ex) { ModuleAdding(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
                             }
+                            catch (Exception ex) { ModuleAdding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
                         }
                     }
                 }
-                catch (Exception ex) { ModuleAdding(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
+                catch (Exception ex) { ModuleAdding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
             }
         }
 
@@ -128,9 +131,9 @@ namespace HSServer.Web.Module
         public static void Remove(string Path) { if(Modules.ContainsKey(Path)) Modules.Remove(Path); }
 
 
-        internal static async Task<ModuleResultCode> RouteAsync(ModuleData data)
+        internal static async Task<ModuleResponseCode> RouteAsync(ModuleData data)
         {
-            if (data == null) return ModuleResultCode.Bypass;
+            if (data == null) return ModuleResponseCode.Bypass;
 
             if (Modules.ContainsKey(data.Path)) return await Modules[data.Path].Proc(data);
             else
@@ -151,7 +154,7 @@ namespace HSServer.Web.Module
                             string path_wildcard = path + "/**";
                             if (Modules.ContainsKey(path_wildcard)) return await Modules[path_wildcard].Proc(data);
                         }
-                        return ModuleResultCode.NotFound;
+                        return ModuleResponseCode.NotFound;
                     }
                 }
             }

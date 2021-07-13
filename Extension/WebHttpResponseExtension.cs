@@ -15,10 +15,10 @@ namespace HSServer.Extension
         /// <param name="Response">Response 인스턴스 입니다</param>
         /// <param name="URL">이동시킬 주소 입니다</param>
         /// <returns>응답코드 302(Found) 를 반환합니다 (반드시 응답코드를 반환하여야 합니다)</returns>
-        public static ModuleResultCode Redirect(this IWebHttpResponse Response, string URL)
+        public static ModuleResponseCode Redirect(this IWebHttpResponse Response, string URL)
         {
             Response.Headers.Add("Location", URL);
-            return (ModuleResultCode)302;
+            return (ModuleResponseCode)302;
         }
 
         #region Body Stream

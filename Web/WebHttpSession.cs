@@ -9,8 +9,8 @@ namespace HSServer.Web
     {
         //public static WebHttpSession GetWebHttpSession(WebHttpSessionRaw session) { }
 
-        Dictionary<string, WebHttpSession> sub = new Dictionary<string, WebHttpSession>();
-        Dictionary<string, string> dic = new Dictionary<string, string>();
+        readonly Dictionary<string, WebHttpSession> sub = new Dictionary<string, WebHttpSession>();
+        readonly Dictionary<string, string> dic = new Dictionary<string, string>();
 
         public WebHttpSession() : base() { }
         //public WebHttpSession(dynamic Value, WebSessionDataType Type = WebSessionDataType.String) {  base.Value = Value; this.Type = Type; } 

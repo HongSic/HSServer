@@ -78,7 +78,7 @@ namespace HSServer.Web.Socket
                             path = StringUtils.PathMaker(dir, path);
                             if (!File.Exists(path)) continue;
                         }
-                        WebSocketAdding(string.Format(Language["STR_LOG_WEB_SOCKET_LOADING"], SocketPath[i]), null);
+                        WebSocketAdding?.Invoke(string.Format(Language["STR_LOG_WEB_SOCKET_LOADING"], SocketPath[i]), null);
 
                         Assembly asm = Assembly.LoadFrom(path);
 
@@ -99,15 +99,15 @@ namespace HSServer.Web.Socket
                                     if (attr is ModulePathAttribute module)
                                     {
                                         try { Add(module.Path, (WebSocketProc)Activator.CreateInstance(type)); }
-                                        catch (Exception ex) { WebSocketAdding(string.Format(Language["STR_LOG_WEB_SOCKET_ERROR"], type.Name), ex); }
+                                        catch (Exception ex) { WebSocketAdding?.Invoke(string.Format(Language["STR_LOG_WEB_SOCKET_ERROR"], type.Name), ex); }
                                     }
                                 }
                             }
-                            catch (Exception ex) { WebSocketAdding(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); }
+                            catch (Exception ex) { WebSocketAdding?.Invoke(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); }
                         }
                     }
                 }
-                catch (Exception ex) { WebSocketAdding(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); }
+                catch (Exception ex) { WebSocketAdding?.Invoke(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); }
             }
         }
 

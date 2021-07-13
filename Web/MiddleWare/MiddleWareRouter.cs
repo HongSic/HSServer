@@ -46,7 +46,7 @@ namespace HSServer.Web.MiddleWare
             MiddleWares[Priority].Add(MiddleWare);
 
             string name = Name == null ? MiddleWare.GetType().Name : Name;
-            MiddleWareAdding(string.Format("[Loaded] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", name, MiddleWare.GetType().Name, Priority), null);
+            MiddleWareAdding?.Invoke(string.Format("[Loaded] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", name, MiddleWare.GetType().Name, Priority), null);
         }
         public static void Add(MiddleWareProc MiddleWare)
         {
@@ -98,7 +98,7 @@ namespace HSServer.Web.MiddleWare
                     }
                     catch (Exception ex) { MiddleWareAdding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                 }
-                MiddleWareAdding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
+                MiddleWareAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
             }
         }
 

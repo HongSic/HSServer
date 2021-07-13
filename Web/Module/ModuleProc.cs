@@ -5,6 +5,6 @@ namespace HSServer.Web.Module
 {
     public interface ModuleProc : IDisposable
     {
-        Task<ModuleResultCode> Proc(ModuleData Data);
+        Task<ModuleResponseCode> Proc(ModuleData Data);
     }
 }
