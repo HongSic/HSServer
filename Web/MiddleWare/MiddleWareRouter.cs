@@ -4,21 +4,21 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace HSServer.Web.MiddleWare
+namespace HSServer.Web.Middleware
 {
-    public delegate void MiddleWareRouterInitEventHandler(LanguageManager Language);
+    public delegate void MiddlewareRouterInitEventHandler(LanguageManager Language);
     /// <summary>
     /// Event occure when module is adding  
     /// </summary>
     /// <param name="Message">Debug Message</param>
     /// <param name="Error"></param>
-    public delegate void MiddleWareRouterAddingEventHandler(string Message, Exception Error);
+    public delegate void MiddlewareRouterAddingEventHandler(string Message, Exception Error);
     public static class MiddleWareRouter
     {
-        internal static Dictionary<MiddleWarePriority, List<MiddleWareProc>> MiddleWares = new Dictionary<MiddleWarePriority, List<MiddleWareProc>>();
+        internal static Dictionary<MiddlewarePriority, List<MiddlewareProc>> MiddleWares = new Dictionary<MiddlewarePriority, List<MiddlewareProc>>();
 
-        public static event MiddleWareRouterInitEventHandler MiddleWareIniting;
-        public static event MiddleWareRouterAddingEventHandler MiddleWareAdding;
+        public static event MiddlewareRouterInitEventHandler MiddleWareIniting;
+        public static event MiddlewareRouterAddingEventHandler MiddleWareAdding;
 
         private static LanguageManager Language;
 
@@ -40,19 +40,19 @@ namespace HSServer.Web.MiddleWare
             }
         }
 
-        public static void Add(MiddleWareProc MiddleWare, string Name, MiddleWarePriority Priority = MiddleWarePriority.Normal) 
+        public static void Add(MiddlewareProc MiddleWare, string Name, MiddlewarePriority Priority = MiddlewarePriority.Normal) 
         {
-            if (!MiddleWares.ContainsKey(Priority)) MiddleWares.Add(Priority, new List<MiddleWareProc>());
+            if (!MiddleWares.ContainsKey(Priority)) MiddleWares.Add(Priority, new List<MiddlewareProc>());
             MiddleWares[Priority].Add(MiddleWare);
 
             string name = Name == null ? MiddleWare.GetType().Name : Name;
             MiddleWareAdding?.Invoke(string.Format("[Loaded] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", name, MiddleWare.GetType().Name, Priority), null);
         }
-        public static void Add(MiddleWareProc MiddleWare)
+        public static void Add(MiddlewareProc MiddleWare)
         {
             Attribute[] attrs = Attribute.GetCustomAttributes(MiddleWare.GetType());
             foreach (Attribute attr in attrs)
-                if (attr is MiddleWareInfoAttribute middle)
+                if (attr is MiddlewareInfoAttribute middle)
                     Add(MiddleWare, middle.Name, middle.Priority);
         }
         public static void AddByAssembly(params string[] ModulePath)
@@ -78,14 +78,14 @@ namespace HSServer.Web.MiddleWare
                                 foreach (Attribute attr in attrs)
                                 {
                                     //Console.WriteLine("ATTR_TYPE: " + attr.GetType());
-                                    MiddleWareInfoAttribute mw = attr as MiddleWareInfoAttribute;
+                                    MiddlewareInfoAttribute mw = attr as MiddlewareInfoAttribute;
                                     if (mw != null)
                                     {
                                         //Console.WriteLine("ATTR_NAME: " + mw.Name);
                                         //Console.WriteLine("ATTR_AUTO: " + mw.AutoRegister); 
                                         if (mw.AutoRegister)
                                         {
-                                            try { Add((MiddleWareProc)Activator.CreateInstance(type), mw.Name, mw.Priority); }
+                                            try { Add((MiddlewareProc)Activator.CreateInstance(type), mw.Name, mw.Priority); }
                                             catch (Exception ex) { MiddleWareAdding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
                                             break;
                                         }
@@ -102,7 +102,7 @@ namespace HSServer.Web.MiddleWare
             }
         }
 
-        public static void Remove(MiddleWareProc MiddleWare)
+        public static void Remove(MiddlewareProc MiddleWare)
         {
             foreach(var pr in MiddleWares.Keys)
             {
@@ -115,14 +115,14 @@ namespace HSServer.Web.MiddleWare
                 }
             }
         }
-        private static uint? ID(MiddleWareProc MiddleWare)
+        private static uint? ID(MiddlewareProc MiddleWare)
         {
             Attribute[] attrs = Attribute.GetCustomAttributes(MiddleWare.GetType());
             foreach (Attribute attr in attrs)
             {
-                if (attr is MiddleWareInfoAttribute)
+                if (attr is MiddlewareInfoAttribute)
                 {
-                    MiddleWareInfoAttribute mw = (MiddleWareInfoAttribute)attr;
+                    MiddlewareInfoAttribute mw = (MiddlewareInfoAttribute)attr;
                     return mw.ID;
                 }
             }
@@ -130,11 +130,11 @@ namespace HSServer.Web.MiddleWare
         }
 
 
-        internal static async Task<MiddleWareData> RouteAsync(MiddleWareData Data)
+        internal static async Task<MiddlewareData> RouteAsync(MiddlewareData Data)
         {
-            for (int j = 0; j < 3; j++)
+            for (int j = (int)MiddlewarePriority.Crital; j < (int)MiddlewarePriority.Low; j++)
             {
-                MiddleWarePriority p = (MiddleWarePriority)j;
+                MiddlewarePriority p = (MiddlewarePriority)j;
                 if(MiddleWares.ContainsKey(p))
                 {
                     for (int i = 0; i < MiddleWares[p].Count; i++)
@@ -149,26 +149,26 @@ namespace HSServer.Web.MiddleWare
         }
     }
 
-    public class MiddleWareRouterPack
+    class MiddlewareRouterPack
     {
-        internal List<MiddleWareProc> MiddleWares = new List<MiddleWareProc>(10);
-        public void Add(MiddleWareProc MiddleWare)
+        internal List<MiddlewareProc> Middlewares = new List<MiddlewareProc>(10);
+        public void Add(MiddlewareProc MiddleWare)
         {
             if (MiddleWare == null) throw new NullReferenceException("MiddleWare cannot be null");
-            else if(!Exist(MiddleWare)) MiddleWares.Add(MiddleWare);
+            else if(!Exist(MiddleWare)) Middlewares.Add(MiddleWare);
         }
 
         //public MiddleWareProc this[int Index] { get { return MiddleWares[Index]; } }
 
-        public int Count { get { return MiddleWares.Count; } }
+        public int Count { get { return Middlewares.Count; } }
 
-        public bool Exist(MiddleWareProc MiddleWare)
+        public bool Exist(MiddlewareProc MiddleWare)
         {
-            for (int i = 0; i < MiddleWares.Count; i++)
-                if(MiddleWares[i].Equals(MiddleWare)) return true;
+            for (int i = 0; i < Middlewares.Count; i++)
+                if(Middlewares[i].Equals(MiddleWare)) return true;
             return false;
         }
 
-        public MiddleWareProc[] GetMiddleWares() { return MiddleWares.ToArray(); }
+        public MiddlewareProc[] GetMiddleWares() { return Middlewares.ToArray(); }
     }
 }

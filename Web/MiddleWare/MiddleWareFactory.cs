@@ -1,17 +1,17 @@
 ﻿using HS.Utils;
-using HSServer.Web.Module;
+using HSServer.Web.Router;
 
-namespace HSServer.Web.MiddleWare
+namespace HSServer.Web.Middleware
 {
-    public static class MiddleWareFactory
+    public static class MiddlewareFactory
     {
-        public class ModuleDataAlloc : ModuleData
+        public class ModuleDataAlloc : RouterData
         {
             public ModuleDataAlloc(LanguageManager STR_LANG, WebHttpContext Context, dynamic ExtraData)
             { this.STR_LANG = STR_LANG; this.Context = Context; this.ExtraData = ExtraData; }
 
-            public ModuleDataAlloc(ModuleData Data) { STR_LANG = Data.STR_LANG; Context = Data.Context; ExtraData = Data.ExtraData; }
-            public ModuleDataAlloc(MiddleWareData Data) { Path = Data.Path; STR_LANG = Data.STR_LANG; Context = Data.Context; ExtraData = Data.ExtraData; }
+            public ModuleDataAlloc(RouterData Data) { STR_LANG = Data.STR_LANG; Context = Data.Context; ExtraData = Data.ExtraData; }
+            public ModuleDataAlloc(MiddlewareData Data) { Path = Data.Path; STR_LANG = Data.STR_LANG; Context = Data.Context; ExtraData = Data.ExtraData; }
 
             /// <summary>
             /// 웹 접속 경로

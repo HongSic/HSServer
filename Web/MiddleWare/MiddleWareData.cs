@@ -1,12 +1,12 @@
 ﻿using HS.Utils;
 using HSServer.Extension;
-using HSServer.Web.Define;
-using HSServer.Web.Module;
+using HSServer.Utils;
+using HSServer.Web.Router;
 using System.Threading.Tasks;
 
-namespace HSServer.Web.MiddleWare
+namespace HSServer.Web.Middleware
 {
-    public class MiddleWareData : ModuleData
+    public class MiddlewareData : RouterData
     {
         public string Path { get; set; }
 
@@ -21,7 +21,7 @@ namespace HSServer.Web.MiddleWare
         /// </summary>
         public bool IsClose { get; private set; }
 
-        internal MiddleWareData(string Path, LanguageManager STR_LANG, WebHttpContextRaw ContextRaw)
+        internal MiddlewareData(string Path, LanguageManager STR_LANG, WebHttpContextRaw ContextRaw)
         {
             this.Path = Path;
             this.STR_LANG = STR_LANG;
@@ -43,14 +43,14 @@ namespace HSServer.Web.MiddleWare
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Data">데이터 (JSON 으로 출력됩니다)</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(ModuleResponseCode StatusCode = ModuleResponseCode.Error, object Data = null, bool Abort = false) { await CloseAsync((float)StatusCode, Data, Abort); }
+        public async Task CloseAsync(RouterResponseCode StatusCode = RouterResponseCode.Error, object Data = null, bool Abort = false) { await CloseAsync((float)StatusCode, Data, Abort); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지 (비동기)
         /// </summary>
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Message">출력 메세지</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(ModuleResponseCode StatusCode = ModuleResponseCode.Error, string Message = null, bool Abort = false) { await CloseAsync((float)StatusCode, Message, Abort); }
+        public async Task CloseAsync(RouterResponseCode StatusCode = RouterResponseCode.Error, string Message = null, bool Abort = false) { await CloseAsync((float)StatusCode, Message, Abort); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지 (비동기)
         /// </summary>
@@ -93,14 +93,14 @@ namespace HSServer.Web.MiddleWare
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Message">출력 메세지</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public void Close(ModuleResponseCode StatusCode = ModuleResponseCode.Error, string Message = null, bool Abort = false) { CloseAsync(StatusCode, Message, Abort).Wait(); }
+        public void Close(RouterResponseCode StatusCode = RouterResponseCode.Error, string Message = null, bool Abort = false) { CloseAsync(StatusCode, Message, Abort).Wait(); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지
         /// </summary>
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Data">데이터 (JSON 으로 출력됩니다)</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public void Close(ModuleResponseCode StatusCode = ModuleResponseCode.Error, object Data = null, bool Abort = false) { CloseAsync(StatusCode, Data, Abort).Wait(); }
+        public void Close(RouterResponseCode StatusCode = RouterResponseCode.Error, object Data = null, bool Abort = false) { CloseAsync(StatusCode, Data, Abort).Wait(); }
 
         internal float StatusCode { get; private set; }
         internal string Message { get; private set; }

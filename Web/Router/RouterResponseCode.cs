@@ -1,10 +1,10 @@
-﻿namespace HSServer.Web.Module
+﻿namespace HSServer.Web.Router
 {
     /// <summary>
     /// 모듈 결과 코드 (HTTP 응답 코드)
     /// (만약 모듈에서 클라이언트로 이미 응답을 보낸상태라면 응답을 보내지 않음)
     /// </summary>
-    public enum ModuleResponseCode
+    public enum RouterResponseCode
     {
         Bypass = -1,
         Warning = 1,

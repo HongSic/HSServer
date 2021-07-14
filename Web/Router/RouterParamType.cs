@@ -1,6 +1,6 @@
-﻿namespace HSServer.Web.Module
+﻿namespace HSServer.Web.Router
 {
-    public enum ModuleParamType
+    public enum RouterParamType
     {
         String,
         Boolean,

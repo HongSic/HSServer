@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace HSServer.Web.MiddleWare
+namespace HSServer.Web.Middleware
 {
-    public interface MiddleWareProc : IDisposable
+    public interface MiddlewareProc : IDisposable
     {
-        Task<MiddleWareData> Proc(MiddleWareData Data);
+        Task<MiddlewareData> Proc(MiddlewareData Data);
     }
 }

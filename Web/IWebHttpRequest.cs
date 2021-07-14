@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace HSServer.Web
 {
     public interface IWebHttpRequest
     {
+        Stream Body { get; }
+        string URL { get; }
         string Method { get; }
         string Scheme { get; }
         long ContentLength { get; }
