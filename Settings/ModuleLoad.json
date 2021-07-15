@@ -1,0 +1,9 @@
+﻿{
+    "LoadOption": {
+
+    },
+    "Load": {
+        "Router": [ "Modules/Router/" ],
+        "MiddleWare": [ "Modules/MiddleWare/" ]
+    }
+}

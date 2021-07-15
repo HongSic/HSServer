@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HSServer.Settings.WebRouter
+namespace HSServer.Settings.WebModule
 {
-    public class WebRouterLoad
+    public class ModuleLoad
     {
-        public WebRouterLoad(string[] MiddleWare, string[] Module)
+        public ModuleLoad(string[] MiddleWare, string[] Module)
         {
             this.MiddleWare = MiddleWare;
             this.Module = Module;

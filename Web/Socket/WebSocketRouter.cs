@@ -96,7 +96,7 @@ namespace HSServer.Web.Socket
                                 Attribute[] attrs = Attribute.GetCustomAttributes(type);
                                 foreach (Attribute attr in attrs)
                                 {
-                                    if (attr is RouterPathAttribute module)
+                                    if (attr is RouterAttribute module)
                                     {
                                         try { Add(module.Path, (WebSocketProc)Activator.CreateInstance(type)); }
                                         catch (Exception ex) { WebSocketAdding?.Invoke(string.Format(Language["STR_LOG_WEB_SOCKET_ERROR"], type.Name), ex); }

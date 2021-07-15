@@ -14,11 +14,9 @@ namespace HSServer.Web.Router
     /// <param name="Message">Debug Message</param>
     /// <param name="Error"></param>
     public delegate void ModuleRouterAddingEventHandler(string Message, Exception Error);
-    public sealed class Router
+    public static class Router
     {
-        internal Router() { }
-
-        private static readonly Dictionary<string, RouterProc> Modules = new Dictionary<string, RouterProc>();
+        private static readonly Dictionary<string, IRouter> Modules = new Dictionary<string, IRouter>();
 
         public static event ModuleRouterInitEventHandler ModuleIniting;
         public static event ModuleRouterAddingEventHandler ModuleAdding;
@@ -46,14 +44,23 @@ namespace HSServer.Web.Router
         }
         //private static void InitErrorLog(Exception ex, string ModuleName) { Logger.LogSYSTEM(LogLevel.ERROR, LanguageManager.Language["STR_LOG_WEB_MODULE_ERROR"], ex, ModuleName); }
 
-        public static bool Add(string WebPath, RouterProc Module, string Name = null)
+        public static bool Add(string WebPath, IRouter Module, string Name = null)
         {
             string name = Name ?? Module.GetType().Name;
             if (!Modules.ContainsKey(WebPath))
             {
-                Modules.Add(WebPath, Module);
-                ModuleAdding?.Invoke(string.Format("[Loaded] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
-                return true;
+                try 
+                { 
+                    Module.Attach(Language);
+                    Modules.Add(WebPath, Module);
+                    ModuleAdding?.Invoke(string.Format("[Loaded Success] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
+                    return true;
+                }
+                catch(Exception ex)
+                {
+                    ModuleAdding?.Invoke(string.Format("[Loaded Error!!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), ex);
+                    return false;
+                }
             }
             else 
             {
@@ -64,16 +71,18 @@ namespace HSServer.Web.Router
             //if (Modules.ContainsKey(Path)) Modules[Path] = Module;
             //else Modules.Add(Path, Module);
         }
-        public static bool Add(RouterProc Module)
+        public static bool Add(IRouter Module)
         {
             Attribute[] attrs = Attribute.GetCustomAttributes(Module.GetType());
             foreach (Attribute attr in attrs)
-                if (attr is RouterPathAttribute module) 
+                if (attr is RouterAttribute module)
                     return Add(module.Path, Module, module.Name);
             return false;
         }
         public static void AddByAssembly(params string[] ModulePath)
         {
+            Type RouterType = typeof(IRouter);
+            Type AttributeIType = typeof(RouterAttribute);
             for (int i = 0; i < ModulePath.Length; i++)
             {
                 try
@@ -99,22 +108,18 @@ namespace HSServer.Web.Router
                         */
 
                         foreach (Type type in asm.GetTypes())
-                        {
-                            /*
-                            if (type is ModuleProc)
-                            {
-                                
-                            }
-                            */
+                        {   
                             try
                             {
-                                Attribute[] attrs = Attribute.GetCustomAttributes(type);
-                                foreach (Attribute attr in attrs)
+                                if (type.IsImplement(RouterType))
                                 {
-                                    if (attr is RouterPathAttribute module)
+                                    if (type.GetCustomAttribute(AttributeIType) is RouterAttribute module)
                                     {
-                                        try { Add(module.Path, (RouterProc)Activator.CreateInstance(type), module.Name); }
-                                        catch (Exception ex) { ModuleAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
+                                        if(module.AutoRegister)
+                                        {
+                                            try { Add(module.Path, (IRouter)Activator.CreateInstance(type), module.Name); }
+                                            catch (Exception ex) { ModuleAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
+                                        }
                                     }
                                 }
                             }
@@ -127,22 +132,23 @@ namespace HSServer.Web.Router
         }
 
 
-        public static void Remove(string Path) { if(Modules.ContainsKey(Path)) Modules.Remove(Path); }
+        public static void Remove(string Path) { if (Modules.ContainsKey(Path)) { Modules[Path].Detach(); Modules.Remove(Path); } }
+        public static void RemoveAll() { foreach (string Path in Modules.Keys) { Modules[Path].Detach(); Modules.Remove(Path); } }
 
 
         internal static async Task<RouterResponseCode> RouteAsync(RouterData data)
         {
             if (data == null) return RouterResponseCode.Bypass;
 
-            if (Modules.ContainsKey(data.Path)) return await Modules[data.Path].Proc(data);
+            if (Modules.ContainsKey(data.Path)) return await Modules[data.Path].Route(data);
             else
             {
                 string wildcard = StringUtils.GetDirectoryName(data.Path);
-                if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Proc(data);
+                if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Route(data);
                 else
                 {
                     wildcard += "/*";
-                    if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Proc(data);
+                    if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Route(data);
                     else
                     {
                         string path = data.Path;
@@ -151,7 +157,7 @@ namespace HSServer.Web.Router
                         {
                             path = path.Remove(idx);
                             string path_wildcard = path + "/**";
-                            if (Modules.ContainsKey(path_wildcard)) return await Modules[path_wildcard].Proc(data);
+                            if (Modules.ContainsKey(path_wildcard)) return await Modules[path_wildcard].Route(data);
                         }
                         return RouterResponseCode.NotFound;
                     }
@@ -162,17 +168,17 @@ namespace HSServer.Web.Router
 
     class RouterProcPack
     {
-        internal Dictionary<string, RouterProc> Routers = new Dictionary<string, RouterProc>();
+        internal Dictionary<string, IRouter> Routers = new Dictionary<string, IRouter>();
         public bool Exist(string Path) { return Routers.ContainsKey(Path); }
-        public void Add(string Path, RouterProc Module) { if (Module != null) Routers.Add(Path, Module); else throw new NullReferenceException("Router cannot be null"); }
-        public void Add(RouterProc Module)
+        public void Add(string Path, IRouter Module) { if (Module != null) Routers.Add(Path, Module); else throw new NullReferenceException("Router cannot be null"); }
+        public void Add(IRouter Module)
         {
             if(Module == null) throw new NullReferenceException("Module cannot be null");
 
             Attribute[] attrs = Attribute.GetCustomAttributes(Module.GetType());
             foreach (Attribute attr in attrs)
             {
-                if (attr is RouterPathAttribute module) Add(module.Path, Module);
+                if (attr is RouterAttribute module) Add(module.Path, Module);
             }
         }
 

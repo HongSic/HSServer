@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HSServer.Settings.WebRouter
+namespace HSServer.Settings.WebModule
 {
-    public class WebRouterLoadOption
+    public class ModuleLoadOption
     {
     }
 }

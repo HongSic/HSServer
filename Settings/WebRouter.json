@@ -1,9 +1,0 @@
-﻿{
-    "LoadOption": {
-
-    },
-    "Load": {
-        "Module": [ "Modules/WebModule/" ],
-        "MiddleWare": [ "Modules/WebMiddleWare/" ]
-    }
-}
