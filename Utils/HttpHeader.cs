@@ -1,7 +1,18 @@
 ﻿namespace HSServer.Utils
 {
-    public static class HttpHeader
+    //https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+    public static class HttpHeaderKind
     {
+        /// <summary>
+        /// Initiates a request for cross-origin resource sharing with Origin (below).
+        /// <code>Access-Control-Request-Method: GET</code>
+        /// </summary>
+        public const string AccessControlRequestMethods = "Access-Control-Request-Methods";
+        /// <summary>
+        /// Initiates a request for cross-origin resource sharing with Origin (below).
+        /// <code>Access-Control-Request-Method: GET</code>
+        /// </summary>
+        public const string AccessControlRequestHeaders = "Access-Control-Request-Headers";
         /// <summary>
         /// Control options for the current connection and list of hop-by-hop request fields.<br/><br/>
         /// Must not be used with HTTP/2
@@ -36,9 +47,13 @@
         public const string Pragma = "Pragma";
         /// <summary>
         /// 
+        /// </summary>
+        public const string UserAgent = "User-Agent";
+        /// <summary>
+        /// 
         /// <code></code>
         /// </summary>
-        public const string aaaaa = "aaaaa";
+        //public const string aaaaa = "aaaaa";
 
         public static class Request
         {
@@ -47,16 +62,6 @@
             /// <code>Accept: text/html</code>
             /// </summary>
             public const string Accept = "Accept";
-            /// <summary>
-            /// Initiates a request for cross-origin resource sharing with Origin (below).
-            /// <code>Access-Control-Request-Method: GET</code>
-            /// </summary>
-            public const string AccessControlRequestMethod = "Access-Control-Request-Method,";
-            /// <summary>
-            /// Initiates a request for cross-origin resource sharing with Origin (below).
-            /// <code>Access-Control-Request-Method: GET</code>
-            /// </summary>
-            public const string AccessControlRequestHeaders = "Access-Control-Request-Headers";
             /// <summary>
             /// Character sets that are acceptable.
             /// <code>Accept-Charset: utf-8</code>
@@ -124,6 +129,9 @@
         }
         public static class Response
         {
+            public const string AccessControlAllowCredentials = "Access-Control-Allow-Credentials";
+            public const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
+            public const string AccessControlMaxAge = "Access-Control-Max-Age";
             /// <summary>
             /// An alternate location for the returned data
             /// <code>Content-Location: /index.html</code>
