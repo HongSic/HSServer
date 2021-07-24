@@ -18,8 +18,8 @@ namespace HSServer.Web.Router
     {
         private static readonly Dictionary<string, IRouter> Modules = new Dictionary<string, IRouter>();
 
-        public static event ModuleRouterInitEventHandler ModuleIniting;
-        public static event ModuleRouterAddingEventHandler ModuleAdding;
+        public static event ModuleRouterInitEventHandler Initing;
+        public static event ModuleRouterAddingEventHandler Adding;
 
         private static LanguageManager Language;
 
@@ -31,7 +31,7 @@ namespace HSServer.Web.Router
         internal static bool Init(ref LanguageManager Language)
         {
 
-            if (ModuleIniting != null) try { ModuleIniting.Invoke(Language); } catch { }
+            if (Initing != null) try { Initing.Invoke(Language); } catch { }
 
             if (Language == null) return false;
             else
@@ -53,18 +53,18 @@ namespace HSServer.Web.Router
                 { 
                     Module.Attach(Language);
                     Modules.Add(WebPath, Module);
-                    ModuleAdding?.Invoke(string.Format("[Loaded Success] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
+                    Adding?.Invoke(string.Format("[Loaded Success] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
                     return true;
                 }
                 catch(Exception ex)
                 {
-                    ModuleAdding?.Invoke(string.Format("[Loaded Error!!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), ex);
+                    Adding?.Invoke(string.Format("[Loaded Error!!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), ex);
                     return false;
                 }
             }
             else 
             {
-                ModuleAdding?.Invoke(string.Format("[Exist!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
+                Adding?.Invoke(string.Format("[Exist Router!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
                 return false;
             }
 
@@ -79,10 +79,11 @@ namespace HSServer.Web.Router
                     return Add(module.Path, Module, module.Name);
             return false;
         }
+
+        internal static Type RouterType = typeof(IRouter);
+        internal static Type AttributeType = typeof(RouterAttribute);
         public static void AddByAssembly(params string[] ModulePath)
         {
-            Type RouterType = typeof(IRouter);
-            Type AttributeIType = typeof(RouterAttribute);
             for (int i = 0; i < ModulePath.Length; i++)
             {
                 try
@@ -96,7 +97,7 @@ namespace HSServer.Web.Router
                             path = StringUtils.PathMaker(dir, path);
                             if (!File.Exists(path)) continue;
                         }
-                        ModuleAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_LOADING"], ModulePath[i]), null);
+                        Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_LOADING"], ModulePath[i]), null);
 
                         Assembly asm = Assembly.LoadFrom(path);
 
@@ -113,21 +114,22 @@ namespace HSServer.Web.Router
                             {
                                 if (type.IsImplement(RouterType))
                                 {
-                                    if (type.GetCustomAttribute(AttributeIType) is RouterAttribute module)
+                                    foreach(var attr in type.GetCustomAttributes(AttributeType))
+                                    if (attr is RouterAttribute module)
                                     {
                                         if(module.AutoRegister)
                                         {
                                             try { Add(module.Path, (IRouter)Activator.CreateInstance(type), module.Name); }
-                                            catch (Exception ex) { ModuleAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
+                                            catch (Exception ex) { Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
                                         }
                                     }
                                 }
                             }
-                            catch (Exception ex) { ModuleAdding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
+                            catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
                         }
                     }
                 }
-                catch (Exception ex) { ModuleAdding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
+                catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
             }
         }
 
@@ -136,33 +138,38 @@ namespace HSServer.Web.Router
         public static void RemoveAll() { foreach (string Path in Modules.Keys) { Modules[Path].Detach(); Modules.Remove(Path); } }
 
 
-        internal static async Task<RouterResponseCode> RouteAsync(RouterData data)
+        internal static async Task<ModuleResponseCode> RouteAsync(RouterData data)
         {
-            if (data == null) return RouterResponseCode.Bypass;
+            if (data == null) return ModuleResponseCode.Bypass;
 
-            if (Modules.ContainsKey(data.Path)) return await Modules[data.Path].Route(data);
-            else
+            IRouter Router = null;
+            try
             {
-                string wildcard = StringUtils.GetDirectoryName(data.Path);
-                if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Route(data);
+                if (Modules.ContainsKey(data.Path)) return await (Router = Modules[data.Path]).Route(data);
                 else
                 {
-                    wildcard += "/*";
-                    if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Route(data);
+                    string wildcard = StringUtils.GetDirectoryName(data.Path);
+                    if (Modules.ContainsKey(wildcard)) return await (Router = Modules[wildcard]).Route(data);
                     else
                     {
-                        string path = data.Path;
-                        int idx;
-                        while ((idx = path.LastIndexOf('/')) > -1)
+                        wildcard += "/*";
+                        if (Modules.ContainsKey(wildcard)) return await (Router = Modules[wildcard]).Route(data);
+                        else
                         {
-                            path = path.Remove(idx);
-                            string path_wildcard = path + "/**";
-                            if (Modules.ContainsKey(path_wildcard)) return await Modules[path_wildcard].Route(data);
+                            string path = data.Path;
+                            int idx;
+                            while ((idx = path.LastIndexOf('/')) > -1)
+                            {
+                                path = path.Remove(idx);
+                                string path_wildcard = path + "/**";
+                                if (Modules.ContainsKey(path_wildcard)) return await (Router = Modules[path_wildcard]).Route(data);
+                            }
+                            return ModuleResponseCode.NotFound;
                         }
-                        return RouterResponseCode.NotFound;
                     }
                 }
             }
+            catch (Exception ex) { throw Router == null ? ex : new RouterException(Router, ex); }
         }
     }
 

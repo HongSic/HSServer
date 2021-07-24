@@ -15,10 +15,10 @@ namespace HSServer.Web.Middleware
     public delegate void MiddlewareRouterAddingEventHandler(string Message, Exception Error);
     public static class Middleware
     {
-        internal static Dictionary<MiddlewarePriority, List<IMiddleware>> MiddleWares = new Dictionary<MiddlewarePriority, List<IMiddleware>>();
+        internal static Dictionary<MiddlewarePriority, List<IMiddleware>> Middlewares = new Dictionary<MiddlewarePriority, List<IMiddleware>>();
 
-        public static event MiddlewareRouterInitEventHandler MiddleWareIniting;
-        public static event MiddlewareRouterAddingEventHandler MiddleWareAdding;
+        public static event MiddlewareRouterInitEventHandler Initing;
+        public static event MiddlewareRouterAddingEventHandler Adding;
 
         private static LanguageManager Language;
 
@@ -30,7 +30,7 @@ namespace HSServer.Web.Middleware
         internal static bool Init(LanguageManager Language) { return Init(ref Language); }
         internal static bool Init(ref LanguageManager Language)
         {
-            if (MiddleWareIniting != null) try { MiddleWareIniting.Invoke(Language); } catch { }
+            if (Initing != null) try { Initing.Invoke(Language); } catch { }
 
             if (Language == null) return false;
             else
@@ -46,15 +46,15 @@ namespace HSServer.Web.Middleware
             try
             {
                 MiddleWare.Attach(Language);
-                if (!MiddleWares.ContainsKey(Priority)) MiddleWares.Add(Priority, new List<IMiddleware>());
-                MiddleWares[Priority].Add(MiddleWare);
+                if (!Middlewares.ContainsKey(Priority)) Middlewares.Add(Priority, new List<IMiddleware>());
+                Middlewares[Priority].Add(MiddleWare);
 
-                MiddleWareAdding?.Invoke(string.Format("[Loaded Success] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", name, MiddleWare.GetType().Name, Priority), null);
+                Adding?.Invoke(string.Format("[Loaded Success] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
                 return true;
             }
             catch(Exception ex)
             {
-                MiddleWareAdding?.Invoke(string.Format("[Loaded Error!!] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", name, MiddleWare.GetType().Name, Priority), null);
+                Adding?.Invoke(string.Format("[Loaded Error!!] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
                 return false;
             }
         }
@@ -66,10 +66,10 @@ namespace HSServer.Web.Middleware
                     Add(MiddleWare, middle.Name, middle.Priority);
         }
 
+        internal static Type MiddlwareType = typeof(IMiddleware);
+        internal static Type AttributeType = typeof(MiddlewareAttribute);
         public static void AddByAssembly(params string[] ModulePath)
         {
-            Type MiddlwareType = typeof(IMiddleware);
-            Type AttributeIType = typeof(MiddlewareAttribute);
             if (ModulePath != null && ModulePath.Length > 0)
             {
                 for(int i = 0; i < ModulePath.Length; i++)
@@ -79,7 +79,7 @@ namespace HSServer.Web.Middleware
                         //나중에 함수 하나 만들기
                         Assembly asm = Assembly.LoadFrom(ModulePath[i]);
 
-                        MiddleWareAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_LOADING"], ModulePath[i]), null);
+                        Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_LOADING"], ModulePath[i]), null);
                         foreach (Type type in asm.GetTypes())
                         {
                             //Console.WriteLine("======");
@@ -89,26 +89,27 @@ namespace HSServer.Web.Middleware
                             {
                                 if(type.IsImplement(MiddlwareType))
                                 {
-                                    if (type.GetCustomAttribute(AttributeIType) is MiddlewareAttribute mw)
+                                    foreach (var attr in type.GetCustomAttributes(AttributeType))
+                                    if (attr is MiddlewareAttribute module)
                                     {
                                         //Console.WriteLine("ATTR_NAME: " + mw.Name);
                                         //Console.WriteLine("ATTR_AUTO: " + mw.AutoRegister); 
-                                        if (mw.AutoRegister)
+                                        if (module.AutoRegister)
                                         {
-                                            try { Add((IMiddleware)Activator.CreateInstance(type), mw.Name, mw.Priority); }
-                                            catch (Exception ex) { MiddleWareAdding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
+                                            try { Add((IMiddleware)Activator.CreateInstance(type), module.Name, module.Priority); }
+                                            catch (Exception ex) { Adding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
                                             break;
                                         }
-                                        else MiddleWareAdding(string.Format("[UnLoad] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", mw.Name, type.Name, mw.Priority), null);
+                                        else Adding(string.Format("[Unload] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", module.Name, type.Name, module.Priority), null);
                                     }
                                 }
                             }
-                            catch (Exception ex) { MiddleWareAdding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
+                            catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                         }
                     }
-                    catch (Exception ex) { MiddleWareAdding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
+                    catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                 }
-                MiddleWareAdding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
+                Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
             }
         }
 
@@ -116,10 +117,10 @@ namespace HSServer.Web.Middleware
         {
             await Task.Run(() =>
             {
-                foreach (var pr in MiddleWares.Keys)
+                foreach (var pr in Middlewares.Keys)
                 {
-                    var mw = MiddleWares[pr];
-                    for (int i = 0; i < MiddleWares.Count; i++)
+                    var mw = Middlewares[pr];
+                    for (int i = 0; i < Middlewares.Count; i++)
                     {
                         uint? ID1 = ID(mw[i]);
                         uint? ID2 = ID(MiddleWare);
@@ -145,16 +146,22 @@ namespace HSServer.Web.Middleware
 
         internal static async Task<MiddlewareData> RouteAsync(MiddlewareData Data)
         {
+
             for (int j = (int)MiddlewarePriority.Crital; j < (int)MiddlewarePriority.Low; j++)
             {
                 MiddlewarePriority p = (MiddlewarePriority)j;
-                if(MiddleWares.ContainsKey(p))
+                if (Middlewares.ContainsKey(p))
                 {
-                    for (int i = 0; i < MiddleWares[p].Count; i++)
+                    for (int i = 0; i < Middlewares[p].Count; i++)
                     {
-                        var data = await MiddleWares[p][i].Start(Data);
-                        if (data != null) Data = data;
-                        if (data.IsAbort) return data;
+                        var Middleware = Middlewares[p][i];
+                        try
+                        {
+                            var data = await Middleware.Start(Data);
+                            if (data != null) Data = data;
+                            if (data.IsAbort) return data;
+                        }
+                        catch (Exception ex) { throw new MiddlewareException(Middleware, ex); }
                     }
                 }
             }

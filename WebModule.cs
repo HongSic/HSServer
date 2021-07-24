@@ -32,7 +32,7 @@ namespace HSServer
             return true;
         }
 
-        public static async Task<RouterResponseCode> RouteAsync(string Path, LanguageManager STR_LANG, WebHttpContextRaw ContextRaw)
+        public static async Task<ModuleResponseCode> RouteAsync(string Path, LanguageManager STR_LANG, WebHttpContextRaw ContextRaw)
         {
             string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
@@ -41,7 +41,7 @@ namespace HSServer
             if(!ContextRaw.Response.Headers.Exist("Server")) ContextRaw.Response.SetHeader("Server", $"HS Server (Web)/{Version}");
 
             MiddlewareData data = await Middleware.RouteAsync(new MiddlewareData(Path, STR_LANG, ContextRaw));
-            RouterResponseCode ResultCode = RouterResponseCode.OK;
+            ModuleResponseCode ResultCode = ModuleResponseCode.OK;
             if (!data.IsClose && ContextRaw.Response.IsWritable) ResultCode = await Router.RouteAsync(data);
             //MiddleWareData data_post = await MiddleWare_Post.RouteAsync(Path, Params, STR_LANG, ContextRaw);
             return ResultCode;

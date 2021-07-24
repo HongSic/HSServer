@@ -36,28 +36,28 @@ namespace HSServer.Web.Middleware
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Data">데이터 (JSON 으로 출력됩니다)</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(float StatusCode = 500, object Data = null, bool Abort = false) { await WriteAsync(StatusCode, JSONUtils.ToSerializeJSON1(Data), Abort, "application/json"); }
+        public async Task CloseAsync(float StatusCode = 500, object Data = null, bool Abort = false) { await WriteAsync(StatusCode, JSONUtils.ToSerializeJSON1(Data), Abort, "application/json; utf-8"); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지 (비동기)
         /// </summary>
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Data">데이터 (JSON 으로 출력됩니다)</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(RouterResponseCode StatusCode = RouterResponseCode.Error, object Data = null, bool Abort = false) { await CloseAsync((float)StatusCode, Data, Abort); }
+        public async Task CloseAsync(ModuleResponseCode StatusCode = ModuleResponseCode.Error, object Data = null, bool Abort = false) { await CloseAsync((float)StatusCode, Data, Abort); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지 (비동기)
         /// </summary>
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Message">출력 메세지</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(RouterResponseCode StatusCode = RouterResponseCode.Error, string Message = null, bool Abort = false) { await CloseAsync((float)StatusCode, Message, Abort); }
+        public async Task CloseAsync(ModuleResponseCode StatusCode = ModuleResponseCode.Error, string Message = null, bool Abort = false) { await CloseAsync((float)StatusCode, Message, Abort); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지 (비동기)
         /// </summary>
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Message">출력 메세지</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(float StatusCode = 500, string Message = null, bool Abort = false) { await WriteAsync(StatusCode, Message, Abort, "text/html"); }
+        public async Task CloseAsync(float StatusCode = 500, string Message = null, bool Abort = false) { await WriteAsync(StatusCode, Message, Abort, "text/html; utf-8"); }
         private async Task WriteAsync(float StatusCode, string Message, bool Abort, string ContentType)
         {
             IsClose = true;
@@ -68,7 +68,7 @@ namespace HSServer.Web.Middleware
             if (!ContextRaw.Response.IsHeaderSent) ContextRaw.Response.StatusCode = StatusCode;
             if (Message != null && ContextRaw.Response.IsWritable)
             {
-                Context.Response.SetHeader(HttpHeader.ContentType, ContentType);
+                Context.Response.SetHeader(HttpHeaderKind.ContentType, ContentType);
                 await Context.Response.WriteAsync(Message);
             }
         }
@@ -93,14 +93,14 @@ namespace HSServer.Web.Middleware
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Message">출력 메세지</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public void Close(RouterResponseCode StatusCode = RouterResponseCode.Error, string Message = null, bool Abort = false) { CloseAsync(StatusCode, Message, Abort).Wait(); }
+        public void Close(ModuleResponseCode StatusCode = ModuleResponseCode.Error, string Message = null, bool Abort = false) { CloseAsync(StatusCode, Message, Abort).Wait(); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지
         /// </summary>
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Data">데이터 (JSON 으로 출력됩니다)</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public void Close(RouterResponseCode StatusCode = RouterResponseCode.Error, object Data = null, bool Abort = false) { CloseAsync(StatusCode, Data, Abort).Wait(); }
+        public void Close(ModuleResponseCode StatusCode = ModuleResponseCode.Error, object Data = null, bool Abort = false) { CloseAsync(StatusCode, Data, Abort).Wait(); }
 
         internal float StatusCode { get; private set; }
         internal string Message { get; private set; }

@@ -7,7 +7,7 @@ namespace HSServer.Web.Router
     public interface IRouter : IDisposable
     {
         void Attach(LanguageManager Language);
-        Task<RouterResponseCode> Route(RouterData Data);
+        Task<ModuleResponseCode> Route(RouterData Data);
         void Detach();
     }
 }
