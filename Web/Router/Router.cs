@@ -79,10 +79,11 @@ namespace HSServer.Web.Router
                     return Add(module.Path, Module, module.Name);
             return false;
         }
+
+        internal static Type RouterType = typeof(IRouter);
+        internal static Type AttributeType = typeof(RouterAttribute);
         public static void AddByAssembly(params string[] ModulePath)
         {
-            Type RouterType = typeof(IRouter);
-            Type AttributeType = typeof(RouterAttribute);
             for (int i = 0; i < ModulePath.Length; i++)
             {
                 try
@@ -141,29 +142,34 @@ namespace HSServer.Web.Router
         {
             if (data == null) return ModuleResponseCode.Bypass;
 
-            if (Modules.ContainsKey(data.Path)) return await Modules[data.Path].Route(data);
-            else
+            IRouter Router = null;
+            try
             {
-                string wildcard = StringUtils.GetDirectoryName(data.Path);
-                if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Route(data);
+                if (Modules.ContainsKey(data.Path)) return await (Router = Modules[data.Path]).Route(data);
                 else
                 {
-                    wildcard += "/*";
-                    if (Modules.ContainsKey(wildcard)) return await Modules[wildcard].Route(data);
+                    string wildcard = StringUtils.GetDirectoryName(data.Path);
+                    if (Modules.ContainsKey(wildcard)) return await (Router = Modules[wildcard]).Route(data);
                     else
                     {
-                        string path = data.Path;
-                        int idx;
-                        while ((idx = path.LastIndexOf('/')) > -1)
+                        wildcard += "/*";
+                        if (Modules.ContainsKey(wildcard)) return await (Router = Modules[wildcard]).Route(data);
+                        else
                         {
-                            path = path.Remove(idx);
-                            string path_wildcard = path + "/**";
-                            if (Modules.ContainsKey(path_wildcard)) return await Modules[path_wildcard].Route(data);
+                            string path = data.Path;
+                            int idx;
+                            while ((idx = path.LastIndexOf('/')) > -1)
+                            {
+                                path = path.Remove(idx);
+                                string path_wildcard = path + "/**";
+                                if (Modules.ContainsKey(path_wildcard)) return await (Router = Modules[path_wildcard]).Route(data);
+                            }
+                            return ModuleResponseCode.NotFound;
                         }
-                        return ModuleResponseCode.NotFound;
                     }
                 }
             }
+            catch (Exception ex) { throw Router == null ? ex : new RouterException(Router, ex); }
         }
     }
 

@@ -15,7 +15,7 @@ namespace HSServer.Web.Middleware
     public delegate void MiddlewareRouterAddingEventHandler(string Message, Exception Error);
     public static class Middleware
     {
-        internal static Dictionary<MiddlewarePriority, List<IMiddleware>> MiddleWares = new Dictionary<MiddlewarePriority, List<IMiddleware>>();
+        internal static Dictionary<MiddlewarePriority, List<IMiddleware>> Middlewares = new Dictionary<MiddlewarePriority, List<IMiddleware>>();
 
         public static event MiddlewareRouterInitEventHandler Initing;
         public static event MiddlewareRouterAddingEventHandler Adding;
@@ -46,8 +46,8 @@ namespace HSServer.Web.Middleware
             try
             {
                 MiddleWare.Attach(Language);
-                if (!MiddleWares.ContainsKey(Priority)) MiddleWares.Add(Priority, new List<IMiddleware>());
-                MiddleWares[Priority].Add(MiddleWare);
+                if (!Middlewares.ContainsKey(Priority)) Middlewares.Add(Priority, new List<IMiddleware>());
+                Middlewares[Priority].Add(MiddleWare);
 
                 Adding?.Invoke(string.Format("[Loaded Success] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
                 return true;
@@ -66,10 +66,10 @@ namespace HSServer.Web.Middleware
                     Add(MiddleWare, middle.Name, middle.Priority);
         }
 
+        internal static Type MiddlwareType = typeof(IMiddleware);
+        internal static Type AttributeType = typeof(MiddlewareAttribute);
         public static void AddByAssembly(params string[] ModulePath)
         {
-            Type MiddlwareType = typeof(IMiddleware);
-            Type AttributeType = typeof(MiddlewareAttribute);
             if (ModulePath != null && ModulePath.Length > 0)
             {
                 for(int i = 0; i < ModulePath.Length; i++)
@@ -117,10 +117,10 @@ namespace HSServer.Web.Middleware
         {
             await Task.Run(() =>
             {
-                foreach (var pr in MiddleWares.Keys)
+                foreach (var pr in Middlewares.Keys)
                 {
-                    var mw = MiddleWares[pr];
-                    for (int i = 0; i < MiddleWares.Count; i++)
+                    var mw = Middlewares[pr];
+                    for (int i = 0; i < Middlewares.Count; i++)
                     {
                         uint? ID1 = ID(mw[i]);
                         uint? ID2 = ID(MiddleWare);
@@ -146,16 +146,22 @@ namespace HSServer.Web.Middleware
 
         internal static async Task<MiddlewareData> RouteAsync(MiddlewareData Data)
         {
+
             for (int j = (int)MiddlewarePriority.Crital; j < (int)MiddlewarePriority.Low; j++)
             {
                 MiddlewarePriority p = (MiddlewarePriority)j;
-                if(MiddleWares.ContainsKey(p))
+                if (Middlewares.ContainsKey(p))
                 {
-                    for (int i = 0; i < MiddleWares[p].Count; i++)
+                    for (int i = 0; i < Middlewares[p].Count; i++)
                     {
-                        var data = await MiddleWares[p][i].Start(Data);
-                        if (data != null) Data = data;
-                        if (data.IsAbort) return data;
+                        var Middleware = Middlewares[p][i];
+                        try
+                        {
+                            var data = await Middleware.Start(Data);
+                            if (data != null) Data = data;
+                            if (data.IsAbort) return data;
+                        }
+                        catch (Exception ex) { throw new MiddlewareException(Middleware, ex); }
                     }
                 }
             }
