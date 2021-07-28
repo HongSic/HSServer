@@ -1,6 +1,6 @@
 ﻿using HS.Utils;
+using HS.Utils.Web.Http;
 using HSServer.Extension;
-using HSServer.Utils;
 using HSServer.Web.Router;
 using System.Threading.Tasks;
 

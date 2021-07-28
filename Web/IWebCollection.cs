@@ -2,15 +2,14 @@
 
 namespace HSServer.Web
 {
-    public interface IWebCollection
+    public interface IWebCollection<T> : IEnumerable<KeyValuePair<string, IList<T>>>
     {
-        string this[string key] { get; }
+        IList<T> this[string key] { get; set; }
 
         bool Exist(string Key);
 
         ICollection<string> Keys { get; }
-        int Count { get; }
 
-        bool TryGetValue(string key, out string value);
+        bool TryGetValue(string key, out IList<T> value);
     }
 }

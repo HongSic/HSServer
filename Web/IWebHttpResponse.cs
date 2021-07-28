@@ -15,6 +15,7 @@ namespace HSServer.Web
         long? ContentLength { get; set; }
 
         IWebHttpHeaders Headers { get; }
+        IWebHttpResponseCookie Cookies { get; }
 
         Stream Body { get; set; }
         bool IsHeaderSent { get; }

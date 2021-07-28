@@ -1,6 +1,7 @@
 ﻿using HS.Utils;
+using HSServer.Utils;
 using HSServer.Web;
-using HSServer.Web.Router;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -140,13 +141,17 @@ namespace HSServer.Extension
         #endregion
         #endregion
 
-        public static void SetHeader(this IWebHttpResponse Response, string Key, string Value)
+        public static void SetHeader(this IWebHttpResponse Response, string Key, params string[] Value)
         {
             if(!Response.IsHeaderSent)
             {
-                if (Response.Headers.Exist(Key)) Response.Headers[Key] = Value;
-                else Response.Headers.Add(Key, Value);
+                if (Response.Headers.Exist(Key)) Response.Headers.Remove(Key);
+                Response.Headers.Add(Key, Value);
             }
         }
+
+        public static WebHttpCookieValue GetCookie(this IWebHttpResponse Response, string Name, WebHttpCookieValue Default = null) => WebUtils.GetCookie(Response.Cookies, Name, Default);
+        public static IList<WebHttpCookieValue> GetCookies(this IWebHttpResponse Response, string Name, IList<WebHttpCookieValue> Default = null) => WebUtils.GetCookies(Response.Cookies, Name, Default);
+
     }
 }

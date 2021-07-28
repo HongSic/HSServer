@@ -2,7 +2,7 @@
 
 namespace HSServer.Web
 {
-    public interface IWebHttpResponseForm : IWebCollection
+    public interface IWebHttpResponseForm : IWebCollectionReadOnly<string>
     {
     }
 }

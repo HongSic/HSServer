@@ -21,7 +21,7 @@ namespace HSServer.Web
         IWebHttpParams Params { get; }
         IWebHttpResponseForm Form { get; }
         IWebHttpHeaders Headers { get; }
-        IWebHttpCookies Cookies { get; }
+        IWebHttpRequestCookies Cookies { get; }
         //IWebCollection Host { get; }
     }
 }

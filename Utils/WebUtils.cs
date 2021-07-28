@@ -1,5 +1,6 @@
 ﻿using HSServer.Web;
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -41,7 +42,7 @@ namespace HSServer.Utils
             }
         }
 
-        public static string GetParams(string Key, IWebHttpParams Params, IWebHttpResponseForm Form, bool ParamsFirst = true)
+        public static IReadOnlyList<string> GetParams(string Key, IWebHttpParams Params, IWebHttpResponseForm Form, bool ParamsFirst = true)
         {
             try
             {
@@ -59,6 +60,34 @@ namespace HSServer.Utils
                 }
             }
             catch { return null; }
+        }
+
+        public static IList<WebHttpCookieValue> GetCookies(this IWebHttpResponseCookie Cookie, string Name, IList<WebHttpCookieValue> Default = null) => Cookie.Exist(Name) ? Cookie[Name] : Default;
+        public static WebHttpCookieValue GetCookie(this IWebHttpResponseCookie Cookie, string Name, WebHttpCookieValue Default = null)
+        {
+            var cookie = GetCookies(Cookie, Name, null);
+            return cookie == null ? Default : cookie[0];
+        }
+        public static void SetCookies(this IWebHttpResponseCookie Cookie, string Name, IList<WebHttpCookieValue> Values)
+        {
+            if (Cookie.Exist(Name)) Cookie[Name] = Values;
+            else Cookie.Add(Name, Values);
+        }
+        public static void SetCookies(this IWebHttpResponseCookie Cookie, string Name, params WebHttpCookieValue[] Values)
+        {
+            if (Cookie.Exist(Name)) Cookie[Name] = Values;
+            else Cookie.Add(Name, Values);
+        }
+        public static void SetCookie(this IWebHttpResponseCookie Cookie, string Name, WebHttpCookieValue Value)
+        {
+            if (Cookie.Exist(Name))
+            {
+                Cookie.Clear(false);
+                var list = new List<WebHttpCookieValue>(1);
+                list.Add(Value);
+                Cookie[Name] = list;
+            }
+            else Cookie.Add(Name, Value);
         }
 
         public static string GetRedirectHTML(string URL, int Delay = 0)

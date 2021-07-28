@@ -146,8 +146,7 @@ namespace HSServer.Web.Middleware
 
         internal static async Task<MiddlewareData> RouteAsync(MiddlewareData Data)
         {
-
-            for (int j = (int)MiddlewarePriority.Crital; j < (int)MiddlewarePriority.Low; j++)
+            for (int j = (int)MiddlewarePriority.Crital; j <= (int)MiddlewarePriority.Low; j++)
             {
                 MiddlewarePriority p = (MiddlewarePriority)j;
                 if (Middlewares.ContainsKey(p))

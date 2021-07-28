@@ -38,7 +38,7 @@ namespace HSServer
 
             //Set HTTP Header to this
             ContextRaw.Response.SetHeader("X-Powered-By", $"HS Server Framework (Web)/{Version}");
-            if(!ContextRaw.Response.Headers.Exist("Server")) ContextRaw.Response.SetHeader("Server", $"HS Server (Web)/{Version}");
+            ContextRaw.Response.SetHeader("Server", $"HS Server (Web)/{Version}");
 
             MiddlewareData data = await Middleware.RouteAsync(new MiddlewareData(Path, STR_LANG, ContextRaw));
             ModuleResponseCode ResultCode = ModuleResponseCode.OK;
