@@ -19,7 +19,7 @@ namespace HSServer.Settings
         public ModuleLoad Load { get; private set; }
 
         public static ModuleSetting FromJSONFile(string JSONPath = null)
-        {            
+        {
             //JSONPath 가 비어있거나 null 이면
             if (string.IsNullOrWhiteSpace(JSONPath))
                 JSONPath = StringUtils.GetExcutePath() + $"/{DIR}/{FILENAME}";
@@ -44,49 +44,59 @@ namespace HSServer.Settings
                 AllowTrailingCommas = true,
             });
 
-            var Load = json.RootElement.GetProperty("Load");
-            var load = new ModuleLoad(GetArray(Load, "MiddleWare", RootPath), GetArray(Load, "Router", RootPath));
+            var Router = json.RootElement.GetProperty("Router");
+            var MiddleWare = json.RootElement.GetProperty("MiddleWare");
+
+            var load = new ModuleLoad(GetArray(MiddleWare, RootPath), GetArray(Router, RootPath));
             return new ModuleSetting(option, load);
         }
 
-        private static string[] GetArray(JsonElement ele, string Property, string RootPath = null)
+        private static string[] GetArray(JsonElement ele, string RootPath = null)
         {
-            JsonElement array;
-            bool exist = ele.TryGetProperty(Property, out array);
-            if (exist)
+            var json_path = ele.GetProperty("Path");
+            var json_recursive = ele.GetProperty("Recursive").GetBoolean();
+
+            int len = json_path.GetArrayLength();
+            List<string> item = new List<string>(len);
+            Stack<string> dirs = new Stack<string>();
+            for (int i = 0; i < len; i++)
             {
-                int len = array.GetArrayLength();
-                List<string> item = new List<string>(len);
-                for (int i = 0; i < len; i++)
+                dirs.Clear();
+                string path;
+
+                if (string.IsNullOrWhiteSpace(RootPath))
                 {
-                    string path;
+                    path = json_path[i].GetString();
+                    //if (path[0] != '\\' && path[0] != '/' && path[1] != ':') path = StringUtils.PathMaker(RootPath, path);
 
-                    if (string.IsNullOrWhiteSpace(RootPath))
+                    if (!ContentsExist(path))
                     {
-                        path = array[i].GetString();
-                        //if (path[0] != '\\' && path[0] != '/' && path[1] != ':') path = StringUtils.PathMaker(RootPath, path);
-
-                        if (!ContentsExist(path))
-                        {
-                            string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                            path = StringUtils.PathMaker(dir, array[i].GetString());
-                            if (!ContentsExist(path)) continue;
-                        }
+                        string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                        path = StringUtils.PathMaker(dir, json_path[i].GetString());
+                        if (!ContentsExist(path)) continue;
                     }
-                    else path = StringUtils.PathMaker(RootPath, array[i].GetString());
+                }
+                else path = StringUtils.PathMaker(RootPath, json_path[i].GetString());
 
-                    if (Directory.Exists(path))
+                if (Directory.Exists(path))
+                {
+                    dirs.Push(path);
+                    do
                     {
-                        string[] files = Directory.GetFiles(path);
+                        string dir = dirs.Pop();
+
+                        string[] files = Directory.GetFiles(dir, "*.dll");
                         item.Capacity += files.Length;
                         for (int j = 0; j < files.Length; j++)
                             item.Add(Path.GetFullPath(files[j]));
+
+                        dirs.PushAll(Directory.GetDirectories(dir));
                     }
-                    else item.Add(Path.GetFullPath(path));
+                    while (json_recursive && dirs.Count > 0);
                 }
-                return item.ToArray();
+                else item.Add(Path.GetFullPath(path));
             }
-            else return null;
+            return item.ToArray();
         }
         private static bool ContentsExist(string Path) { return Directory.Exists(Path) || File.Exists(Path); }
     }
