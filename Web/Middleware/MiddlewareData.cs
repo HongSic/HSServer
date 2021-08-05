@@ -2,6 +2,7 @@
 using HS.Utils.Web.Http;
 using HSServer.Extension;
 using HSServer.Web.Router;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace HSServer.Web.Middleware
@@ -69,7 +70,7 @@ namespace HSServer.Web.Middleware
             if (Message != null && ContextRaw.Response.IsWritable)
             {
                 Context.Response.SetHeader(HttpHeaderKind.ContentType, ContentType);
-                await Context.Response.WriteAsync(Message);
+                await ContextRaw.Response.WriteAsync(Message, (HttpStatusCode)StatusCode);
             }
         }
 

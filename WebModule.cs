@@ -41,7 +41,7 @@ namespace HSServer
             ContextRaw.Response.SetHeader("Server", $"HS Server (Web)/{Version}");
 
             MiddlewareData data = await Middleware.RouteAsync(new MiddlewareData(Path, STR_LANG, ContextRaw));
-            ModuleResponseCode ResultCode = ModuleResponseCode.OK;
+            ModuleResponseCode ResultCode = (ModuleResponseCode)data.StatusCode;
             if (!data.IsClose && ContextRaw.Response.IsWritable) ResultCode = await Router.RouteAsync(data);
             //MiddleWareData data_post = await MiddleWare_Post.RouteAsync(Path, Params, STR_LANG, ContextRaw);
             return ResultCode;

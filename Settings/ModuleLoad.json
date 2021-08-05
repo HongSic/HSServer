@@ -5,6 +5,6 @@
   },
   "MiddleWare": {
     "Recursive": true,
-    "Path": [ "Modules/MiddleWares/" ]
+    "Path": [ "Modules/Middlewares/" ]
   }
 }

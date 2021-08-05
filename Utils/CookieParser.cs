@@ -164,8 +164,7 @@ namespace HSServer.Utils
 					cookie.Value.HttpOnly = true;
 					break;
 				case "MAX-AGE": // RFC Style Set-Cookie2
-					if (cookie.Value.Expires == DateTime.MinValue)
-						try { cookie.Value.Expires = cookie.Value.MaxAge.Value.AddSeconds(UInt32.Parse(val)); } catch { }
+					try { cookie.Value.MaxAge = int.Parse(val); } catch { }
 					break;
 				case "EXPIRES": // Netscape Style Set-Cookie
 					if (cookie.Value.Expires != DateTime.MinValue)

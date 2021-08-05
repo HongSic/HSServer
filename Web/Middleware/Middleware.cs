@@ -49,12 +49,12 @@ namespace HSServer.Web.Middleware
                 if (!Middlewares.ContainsKey(Priority)) Middlewares.Add(Priority, new List<IMiddleware>());
                 Middlewares[Priority].Add(MiddleWare);
 
-                Adding?.Invoke(string.Format("[Loaded Success] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
+                Adding?.Invoke(string.Format("[{0}] MiddleWare: {{ {1} ({2}) }}, Priority={3} }}", Language["STR_SUCCESS"], name, MiddleWare.GetType().Name, Priority), null);
                 return true;
             }
             catch(Exception ex)
             {
-                Adding?.Invoke(string.Format("[Loaded Error!!] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
+                Adding?.Invoke(string.Format("[{0}] MiddleWare: {{ {1} ({2}) }}, Priority={3} }} ({4})", Language["STR_ERROR"], name, MiddleWare.GetType().Name, Priority, ex.Message), null);
                 return false;
             }
         }
@@ -106,10 +106,10 @@ namespace HSServer.Web.Middleware
                             }
                             catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                         }
+                        Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_LOADED"]), null);
                     }
                     catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                 }
-                Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
             }
         }
 
