@@ -9,7 +9,7 @@ namespace HSServer.Web.Router
         public string Name { get; private set; }
         public RouterParamType Type { get; private set; }
         public string Description { get; private set; }
-        public RouterParamAttribute(string Name, RouterParamType Type, string Description = null)
+        public RouterParamAttribute(string Name, RouterParamType Type, string Description)
         {
             this.Name = Name;
             this.Type = Type;
