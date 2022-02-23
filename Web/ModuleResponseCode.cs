@@ -13,6 +13,10 @@
         NotAuth = 401,
         Forbidden = 403,
         NotFound = 404,
+        /// <summary>
+        /// Method Not Allowed 
+        /// </summary>
+        NotAllowed = 405,
         Error = 500,
         NotImplemented = 501,
         Timeout = 504,
