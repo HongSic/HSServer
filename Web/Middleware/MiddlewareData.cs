@@ -37,7 +37,7 @@ namespace HSServer.Web.Middleware
         /// <param name="StatusCode">HTTP 상태 코드</param>
         /// <param name="Data">데이터 (JSON 으로 출력됩니다)</param>
         /// <param name="Abort">True 면 즉시 라우팅 중지 False 면 다른 미들웨어 까지만 실행후 웹 모듈로 라우팅 중지</param>
-        public async Task CloseAsync(float StatusCode = 500, object Data = null, bool Abort = false) { await WriteAsync(StatusCode, JSONUtils.ToSerializeJSON1(Data), Abort, "application/json; charset=utf-8"); }
+        public async Task CloseAsync(float StatusCode = 500, object Data = null, bool Abort = false) { await WriteAsync(StatusCode, JSONUtils.ToSerializeJSON_NS(Data), Abort, "application/json; charset=utf-8"); }
         /// <summary>
         /// 웹 모듈로 라우팅 중지 (비동기)
         /// </summary>

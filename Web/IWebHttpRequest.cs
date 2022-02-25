@@ -5,7 +5,6 @@ namespace HSServer.Web
 {
     public interface IWebHttpRequest
     {
-        Stream Body { get; }
         string URL { get; }
         string Method { get; }
         string Scheme { get; }
@@ -17,6 +16,8 @@ namespace HSServer.Web
         bool FormAvailable { get; }
         string ParamsString { get; }
         string Host { get; }
+
+        Stream GetBodyStream();
 
         IWebHttpParams Params { get; }
         IWebHttpResponseForm Form { get; }
