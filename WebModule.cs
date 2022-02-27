@@ -8,6 +8,8 @@ using HSServer.Extension;
 using System.Threading.Tasks;
 using System.Reflection;
 using System;
+using HS.Log;
+using HSServer.Web.Controller;
 
 namespace HSServer
 {
@@ -17,19 +19,32 @@ namespace HSServer
         public static bool Init(ModuleSetting Setting, ref LanguageManager Manager, bool AddByAssembly = true)
         {
             //string json_file = SettingsHSSever.Settings.GetPath("WebRouter.json");
+            bool Load;
 
-            //Logger.LogSYSTEM(LogLevel.INFO, LanguageManager.Language["STR_LOG_WEB_ROUTER_INITING"]);
-            Middleware.Init(ref Manager);
-            if(AddByAssembly) Middleware.AddByAssembly(Setting.Load.MiddleWare);
+            Controller.Init(ref Manager);
+            Load = Controller.AddByAssembly(Setting.Load.Controller);
 
-            Router.Init(ref Manager);
-            if (AddByAssembly) Router.AddByAssembly(Setting.Load.Module);
-            //Logger.LogSYSTEM(LogLevel.INFO, LanguageManager.Language["STR_LOG_WEB_ROUTER_INITED"]);
+            if(Load)
+            {
+                //Logger.LogSYSTEM(LogLevel.INFO, LanguageManager.Language["STR_LOG_WEB_ROUTER_INITING"]);
+                Middleware.Init(ref Manager);
+                if (AddByAssembly) Load = Middleware.AddByAssembly(Setting.Load.MiddleWare);
+            }
 
-            WebSocketRouter.Init(ref Manager);
-            if (AddByAssembly) WebSocketRouter.AddByAssembly(Setting.Load.Module);
+            if(Load)
+            {
+                Router.Init(ref Manager);
+                if (AddByAssembly) Load = Router.AddByAssembly(Setting.Load.Module);
+                //Logger.LogSYSTEM(LogLevel.INFO, LanguageManager.Language["STR_LOG_WEB_ROUTER_INITED"]);
+            }
 
-            return true;
+            if(Load)
+            {
+                WebSocketRouter.Init(ref Manager);
+                if (AddByAssembly) Load = WebSocketRouter.AddByAssembly(Setting.Load.Module);
+            }
+
+            return Load;
         }
 
         public static async Task<ModuleResponseCode> RouteAsync(string Path, LanguageManager STR_LANG, WebHttpContextRaw ContextRaw)

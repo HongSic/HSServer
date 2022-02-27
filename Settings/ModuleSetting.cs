@@ -44,10 +44,11 @@ namespace HSServer.Settings
                 AllowTrailingCommas = true,
             });
 
+            var Controller = json.RootElement.GetProperty("Controller");
             var Router = json.RootElement.GetProperty("Router");
             var MiddleWare = json.RootElement.GetProperty("MiddleWare");
 
-            var load = new ModuleLoad(GetArray(MiddleWare, RootPath), GetArray(Router, RootPath));
+            var load = new ModuleLoad(GetArray(MiddleWare, RootPath), GetArray(Router, RootPath), GetArray(Controller, RootPath));
             return new ModuleSetting(option, load);
         }
 

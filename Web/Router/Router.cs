@@ -82,7 +82,7 @@ namespace HSServer.Web.Router
 
         internal static Type RouterType = typeof(IRouter);
         internal static Type AttributeType = typeof(RouterAttribute);
-        public static void AddByAssembly(params string[] ModulePath)
+        public static bool AddByAssembly(params string[] ModulePath)
         {
             for (int i = 0; i < ModulePath.Length; i++)
             {
@@ -109,29 +109,29 @@ namespace HSServer.Web.Router
                         */
 
                         foreach (Type type in asm.GetTypes())
-                        {   
-                            try
+                        {
+                            if (type.IsImplement(RouterType))
                             {
-                                if (type.IsImplement(RouterType))
+                                foreach (var attr in type.GetCustomAttributes(AttributeType))
                                 {
-                                    foreach(var attr in type.GetCustomAttributes(AttributeType))
                                     if (attr is RouterAttribute module)
                                     {
-                                        if(module.AutoRegister)
+                                        if (module.AutoRegister)
                                         {
                                             try { Add(module.Path, (IRouter)Activator.CreateInstance(type), module.Name); }
-                                            catch (Exception ex) { Adding?.Invoke(string.Format(Language["STR_LOG_WEB_ROUTER_ERROR"], module.Name), ex); }
+                                            catch (Exception ex) { Adding?.Invoke(string.Format(Language["STR_LOG_WEB_ROUTER_ERROR"], module.Name), ex); return false; }
                                         }
                                     }
                                 }
                             }
-                            catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_ROUTER_ERROR"], ex); }
                         }
                     }
                     Adding?.Invoke(string.Format(Language["STR_LOG_WEB_ROUTER_LOADED"]), null);
                 }
-                catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_ROUTER_ERROR"], ex); }
+                catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_ROUTER_ERROR"], ex); return false; }
             }
+
+            return true;
         }
 
 

@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HS.Log\HS.Log.csproj" />
     <ProjectReference Include="..\HS.Utils\HS.Utils.csproj" />
   </ItemGroup>
 

@@ -63,7 +63,7 @@ namespace HSServer.Web.Socket
             //if (Modules.ContainsKey(Path)) Modules[Path] = Module;
             //else Modules.Add(Path, Module);
         }
-        public static void AddByAssembly(params string[] SocketPath)
+        public static bool AddByAssembly(params string[] SocketPath)
         {
             for (int i = 0; i < SocketPath.Length; i++)
             {
@@ -103,12 +103,14 @@ namespace HSServer.Web.Socket
                                     }
                                 }
                             }
-                            catch (Exception ex) { WebSocketAdding?.Invoke(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); }
+                            catch (Exception ex) { WebSocketAdding?.Invoke(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); return false; }
                         }
                     }
                 }
-                catch (Exception ex) { WebSocketAdding?.Invoke(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); }
+                catch (Exception ex) { WebSocketAdding?.Invoke(Language["STR_LOG_WEB_SOCKET_ERROR"], ex); return false; }
             }
+
+            return true;
         }
 
 
