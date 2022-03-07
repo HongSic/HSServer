@@ -12,7 +12,7 @@ namespace HSServer.Settings
         public const string FILENAME = "ModuleLoad.json";
         public const string DIR = "Settings";
 
-        public static readonly string DefaultPath = StringUtils.GetExcutePath() + $"/{DIR}/{FILENAME}";
+        public static readonly string DefaultPath = StringUtils.GetExcuteDirectory() + $"/{DIR}/{FILENAME}";
 
         public ModuleSetting(ModuleLoadOption LoadOption, ModuleLoad Load) { this.LoadOption = LoadOption; this.Load = Load; }
         public ModuleLoadOption LoadOption { get; private set; }
@@ -22,7 +22,7 @@ namespace HSServer.Settings
         {
             //JSONPath 가 비어있거나 null 이면
             if (string.IsNullOrWhiteSpace(JSONPath))
-                JSONPath = StringUtils.GetExcutePath() + $"/{DIR}/{FILENAME}";
+                JSONPath = StringUtils.GetExcuteDirectory() + $"/{DIR}/{FILENAME}";
 
             return File.Exists(JSONPath) ? FromJSON(File.ReadAllText(JSONPath)) : null;
         }
