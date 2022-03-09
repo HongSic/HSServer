@@ -194,7 +194,7 @@ namespace HSServer.Utils
 				//		cookie.Value.Version = (int)UInt32.Parse(val);
 				//	}
 				//	catch { }
-					break;
+				//	break;
 			}
 		}
 
@@ -278,7 +278,8 @@ namespace HSServer.Utils
 
 					//convert UTC/GMT time to local time
 					cookieExpiresUtc = DateTime.SpecifyKind(cookieExpiresUtc, DateTimeKind.Utc);
-					return TimeZone.CurrentTimeZone.ToLocalTime(cookieExpiresUtc);
+					//return TimeZone.CurrentTimeZone.ToLocalTime(cookieExpiresUtc);
+					return TimeZoneInfo.ConvertTimeFromUtc(cookieExpiresUtc, TimeZoneInfo.Local);
 				}
 				catch { }
 			}
