@@ -24,6 +24,10 @@
         /// </summary>
         NotAllowed = 405,
         /// <summary>
+        /// Access to the target resource is no longer available
+        /// </summary>
+        Gone = 410,
+        /// <summary>
         /// Server Error
         /// </summary>
         Error = 500,
