@@ -16,7 +16,7 @@ namespace HSServer.Extension
         /// <returns></returns>
         public static string GetValue(this IWebHttpRequest Request, string Key, string DefaultValue = null)
         {
-            string value = GetParam(Request, Key, DefaultValue);
+            string value = GetParam(Request, Key, null);
             return value == null && Request.FormAvailable ?
                 (Request.Form.Exist(Key) ? Request.Form[Key][0] : DefaultValue) :
                 value;
