@@ -49,12 +49,12 @@ namespace HSServer.Web.Middleware
                 if (!Middlewares.ContainsKey(Priority)) Middlewares.Add(Priority, new List<IMiddleware>());
                 Middlewares[Priority].Add(MiddleWare);
 
-                Adding?.Invoke(string.Format("[Loaded Success] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
+                Adding?.Invoke(string.Format("[{0}] MiddleWare: {{ {1} ({2}) }}, Priority={3} }}", Language["STR_SUCCESS"], name, MiddleWare.GetType().Name, Priority), null);
                 return true;
             }
             catch(Exception ex)
             {
-                Adding?.Invoke(string.Format("[Loaded Error!!] MiddleWare: {{ {0} ({1}) }}, Priority={2} }}", name, MiddleWare.GetType().Name, Priority), null);
+                Adding?.Invoke(string.Format("[{0}] MiddleWare: {{ {1} ({2}) }}, Priority={3} }} ({4})", Language["STR_ERROR"], name, MiddleWare.GetType().Name, Priority, ex.Message), null);
                 return false;
             }
         }
@@ -68,7 +68,7 @@ namespace HSServer.Web.Middleware
 
         internal static Type MiddlwareType = typeof(IMiddleware);
         internal static Type AttributeType = typeof(MiddlewareAttribute);
-        public static void AddByAssembly(params string[] ModulePath)
+        public static bool AddByAssembly(params string[] ModulePath)
         {
             if (ModulePath != null && ModulePath.Length > 0)
             {
@@ -85,11 +85,11 @@ namespace HSServer.Web.Middleware
                             //Console.WriteLine("======");
                             //Console.WriteLine("TYPE: " + type.GetType());
                             //Console.WriteLine("NAME: " + type.Name);
-                            try
+
+                            if (type.IsImplement(MiddlwareType))
                             {
-                                if(type.IsImplement(MiddlwareType))
+                                foreach (var attr in type.GetCustomAttributes(AttributeType))
                                 {
-                                    foreach (var attr in type.GetCustomAttributes(AttributeType))
                                     if (attr is MiddlewareAttribute module)
                                     {
                                         //Console.WriteLine("ATTR_NAME: " + mw.Name);
@@ -97,20 +97,22 @@ namespace HSServer.Web.Middleware
                                         if (module.AutoRegister)
                                         {
                                             try { Add((IMiddleware)Activator.CreateInstance(type), module.Name, module.Priority); }
-                                            catch (Exception ex) { Adding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); }
+                                            catch (Exception ex) { Adding(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], type.Name), ex); return false; }
                                             break;
                                         }
                                         else Adding(string.Format("[Unload] WebMiddleWare: {{ {0} ({1}) }}, Priority={2}", module.Name, type.Name, module.Priority), null);
                                     }
                                 }
                             }
-                            catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
                         }
                     }
-                    catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); }
+                    catch (Exception ex) { Adding(Language["STR_LOG_WEB_MIDDLEWARE_ERROR"], ex); return false; }
                 }
-                Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_COMPLETE"]), null);
+
+                Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MIDDLEWARE_LOADED"]), null);
             }
+
+            return true;
         }
 
         public static async Task Remove(IMiddleware MiddleWare)
@@ -146,8 +148,7 @@ namespace HSServer.Web.Middleware
 
         internal static async Task<MiddlewareData> RouteAsync(MiddlewareData Data)
         {
-
-            for (int j = (int)MiddlewarePriority.Crital; j < (int)MiddlewarePriority.Low; j++)
+            for (int j = (int)MiddlewarePriority.Crital; j <= (int)MiddlewarePriority.Low; j++)
             {
                 MiddlewarePriority p = (MiddlewarePriority)j;
                 if (Middlewares.ContainsKey(p))

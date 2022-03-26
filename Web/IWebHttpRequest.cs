@@ -5,7 +5,6 @@ namespace HSServer.Web
 {
     public interface IWebHttpRequest
     {
-        Stream Body { get; }
         string URL { get; }
         string Method { get; }
         string Scheme { get; }
@@ -18,10 +17,12 @@ namespace HSServer.Web
         string ParamsString { get; }
         string Host { get; }
 
+        Stream GetBodyStream();
+
         IWebHttpParams Params { get; }
         IWebHttpResponseForm Form { get; }
         IWebHttpHeaders Headers { get; }
-        IWebHttpCookies Cookies { get; }
+        IWebHttpRequestCookies Cookies { get; }
         //IWebCollection Host { get; }
     }
 }

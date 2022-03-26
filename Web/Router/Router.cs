@@ -49,22 +49,22 @@ namespace HSServer.Web.Router
             string name = Name ?? Module.GetType().Name;
             if (!Modules.ContainsKey(WebPath))
             {
-                try 
+                try
                 { 
                     Module.Attach(Language);
                     Modules.Add(WebPath, Module);
-                    Adding?.Invoke(string.Format("[Loaded Success] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
+                    Adding?.Invoke(string.Format("[{0}] Router: [{1}] {2} ({3})", Language["STR_SUCCESS"], WebPath, Name, Module.GetType().Name), null);
                     return true;
                 }
                 catch(Exception ex)
                 {
-                    Adding?.Invoke(string.Format("[Loaded Error!!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), ex);
+                    Adding?.Invoke(string.Format("[{0}] Router: [{1}] {2} ({3})", Language["STR_ERROR"], WebPath, Name, Module.GetType().Name), ex);
                     return false;
                 }
             }
             else 
             {
-                Adding?.Invoke(string.Format("[Exist Router!] Router: [{0}] {1} ({2})", WebPath, Name, Module.GetType().Name), null);
+                Adding?.Invoke(string.Format("[{0}] Router: [{1}] {2} ({3})", Language["STR_EXIST"], WebPath, Name, Module.GetType().Name), null);
                 return false;
             }
 
@@ -82,7 +82,7 @@ namespace HSServer.Web.Router
 
         internal static Type RouterType = typeof(IRouter);
         internal static Type AttributeType = typeof(RouterAttribute);
-        public static void AddByAssembly(params string[] ModulePath)
+        public static bool AddByAssembly(params string[] ModulePath)
         {
             for (int i = 0; i < ModulePath.Length; i++)
             {
@@ -97,7 +97,7 @@ namespace HSServer.Web.Router
                             path = StringUtils.PathMaker(dir, path);
                             if (!File.Exists(path)) continue;
                         }
-                        Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_LOADING"], ModulePath[i]), null);
+                        Adding?.Invoke(string.Format(Language["STR_LOG_WEB_ROUTER_LOADING"], ModulePath[i]), null);
 
                         Assembly asm = Assembly.LoadFrom(path);
 
@@ -109,28 +109,29 @@ namespace HSServer.Web.Router
                         */
 
                         foreach (Type type in asm.GetTypes())
-                        {   
-                            try
+                        {
+                            if (type.IsImplement(RouterType))
                             {
-                                if (type.IsImplement(RouterType))
+                                foreach (var attr in type.GetCustomAttributes(AttributeType))
                                 {
-                                    foreach(var attr in type.GetCustomAttributes(AttributeType))
                                     if (attr is RouterAttribute module)
                                     {
-                                        if(module.AutoRegister)
+                                        if (module.AutoRegister)
                                         {
                                             try { Add(module.Path, (IRouter)Activator.CreateInstance(type), module.Name); }
-                                            catch (Exception ex) { Adding?.Invoke(string.Format(Language["STR_LOG_WEB_MODULE_ERROR"], module.Name), ex); }
+                                            catch (Exception ex) { Adding?.Invoke(string.Format(Language["STR_LOG_WEB_ROUTER_ERROR"], module.Name), ex); return false; }
                                         }
                                     }
                                 }
                             }
-                            catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
                         }
                     }
+                    Adding?.Invoke(string.Format(Language["STR_LOG_WEB_ROUTER_LOADED"]), null);
                 }
-                catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_MODULE_ERROR"], ex); }
+                catch (Exception ex) { Adding?.Invoke(Language["STR_LOG_WEB_ROUTER_ERROR"], ex); return false; }
             }
+
+            return true;
         }
 
 

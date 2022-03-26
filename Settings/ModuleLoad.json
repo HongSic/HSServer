@@ -1,9 +1,10 @@
 ﻿{
-    "LoadOption": {
-
-    },
-    "Load": {
-        "Router": [ "Modules/Router/" ],
-        "MiddleWare": [ "Modules/MiddleWare/" ]
-    }
+  "Router": {
+    "Recursive": true,
+    "Path": [ "Modules/Routers/" ]
+  },
+  "MiddleWare": {
+    "Recursive": true,
+    "Path": [ "Modules/Middlewares/" ]
+  }
 }

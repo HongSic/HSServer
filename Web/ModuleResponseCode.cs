@@ -6,13 +6,30 @@
     /// </summary>
     public enum ModuleResponseCode
     {
+        /// <summary>
+        /// [Special] Router Bypass
+        /// </summary>
         Bypass = -1,
+        /// <summary>
+        /// [Special] OK. but warning
+        /// </summary>
         Warning = 1,
         OK = 200,
         BadRequest = 400,
         NotAuth = 401,
         Forbidden = 403,
         NotFound = 404,
+        /// <summary>
+        /// Method Not Allow
+        /// </summary>
+        NotAllowed = 405,
+        /// <summary>
+        /// Access to the target resource is no longer available
+        /// </summary>
+        Gone = 410,
+        /// <summary>
+        /// Server Error
+        /// </summary>
         Error = 500,
         NotImplemented = 501,
         Timeout = 504,

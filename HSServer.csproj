@@ -9,10 +9,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HS.Log\HS.Log.csproj" />
     <ProjectReference Include="..\HS.Utils\HS.Utils.csproj" />
   </ItemGroup>
 

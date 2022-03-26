@@ -2,7 +2,7 @@
 
 namespace HSServer.Web
 {
-    public interface IWebHttpParams : IWebCollection
+    public interface IWebHttpParams : IWebCollectionReadOnly<string>
     {
 
     }
