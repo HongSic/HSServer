@@ -15,7 +15,14 @@
         /// </summary>
         Warning = 1,
         OK = 200,
+        /// <summary>
+        /// Found
+        /// </summary>
+        Redirect = 302,
         BadRequest = 400,
+        /// <summary>
+        /// Not Login or Authentication error
+        /// </summary>
         NotAuth = 401,
         Forbidden = 403,
         NotFound = 404,
