@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using HS.Utils.Resource;
+using HS.Utils.Text;
 
 namespace HSServer.Web.Router
 {

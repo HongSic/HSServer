@@ -1,6 +1,7 @@
 ﻿using HS.Utils;
 using System;
 using System.Threading.Tasks;
+using HS.Utils.Resource;
 
 namespace HSServer.Web.Middleware
 {

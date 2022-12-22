@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using HS.Utils.Stream;
+using HS.Utils.Text;
 
 namespace HSServer.Settings
 {
@@ -29,7 +31,7 @@ namespace HSServer.Settings
 
         public static ModuleSetting FromResource()
         {
-            using (var res = IOUtils.GetResourceStream($"HSServer.{DIR}", FILENAME))
+            using (var res = StreamUtils.GetResourceStream($"HSServer.{DIR}", FILENAME))
             using (var str = new StreamReader(res))
                 return FromJSON(str.ReadToEnd());
         }

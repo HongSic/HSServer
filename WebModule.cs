@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System;
 using HS.Log;
+using HS.Utils.Resource;
 using HSServer.Web.Controller;
 
 namespace HSServer

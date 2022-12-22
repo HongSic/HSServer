@@ -1,4 +1,5 @@
 ﻿using HS.Utils;
+using HS.Utils.Resource;
 
 namespace HSServer.Web.Controller
 {

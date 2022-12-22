@@ -6,6 +6,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using HS.Utils.Stream;
+using HS.Utils.Text;
 
 namespace HSServer.Extension
 {

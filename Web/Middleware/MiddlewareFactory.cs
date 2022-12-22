@@ -1,4 +1,5 @@
 ﻿using HS.Utils;
+using HS.Utils.Resource;
 using HSServer.Web.Router;
 
 namespace HSServer.Web.Middleware

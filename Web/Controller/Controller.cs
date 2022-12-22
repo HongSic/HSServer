@@ -1,6 +1,7 @@
 ﻿using HS.Utils;
 using System;
 using System.Reflection;
+using HS.Utils.Resource;
 
 namespace HSServer.Web.Controller
 {

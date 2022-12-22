@@ -4,6 +4,8 @@ using HSServer.Extension;
 using HSServer.Web.Router;
 using System.Net;
 using System.Threading.Tasks;
+using HS.Utils.Resource;
+using HS.Utils.Text;
 
 namespace HSServer.Web.Middleware
 {

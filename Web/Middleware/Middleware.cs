@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using HS.Utils.Resource;
 
 namespace HSServer.Web.Middleware
 {
